@@ -6,6 +6,8 @@
 
 using namespace MojoMerge;
 
+#define UNDO_SIZE_DEFAULT   16
+
 // Initialize static members
 wxConfig *Config::MyConfigData = NULL;
 
@@ -37,9 +39,7 @@ bool Config::GetShowLineNumbers()
 
     // MyConfigData can't be NULL
     assert(MyConfigData);
-    bool i = MyConfigData->Read(wxT("ShowLineNumbers"), &Value, false);
-    // Fails if write was not successful
-    assert(i);
+    MyConfigData->Read(wxT("ShowLineNumbers"), &Value, false);
 
     return Value;
 }
@@ -60,9 +60,7 @@ bool Config::GetShowCRLF()
 
     // MyConfigData can't be NULL
     assert(MyConfigData);
-    bool i = MyConfigData->Read(wxT("ShowCRLF"), &Value, false);
-    // Fails if write was not successful
-    assert(i);
+    MyConfigData->Read(wxT("ShowCRLF"), &Value, false);
 
     return Value;
 }
@@ -83,9 +81,32 @@ bool Config::GetShowInlineChanges()
 
     // MyConfigData can't be NULL
     assert(MyConfigData);
-    bool i = MyConfigData->Read(wxT("ShowInlineChanges"), &Value, false);
-    // Fails if write was not successful
-    assert(i);
+    MyConfigData->Read(wxT("ShowInlineChanges"), &Value, false);
 
     return Value;
+}
+
+uint32 Config::GetUndoSize()
+{
+    // Return value
+    long Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("UndoSize"), &Value, UNDO_SIZE_DEFAULT);
+    // Make sure value is not negative since we're casting a long to an
+    //  unsigned value
+    assert(Value > 0);
+
+    return (uint32)Value;
+}
+
+void Config::SetUndoSize(uint32 Size)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    // TODO - Should we check for Size being to big?
+    bool i = MyConfigData->Write(wxT("UndoSize"), (long)Size);
+    // Fails if write was not successful
+    assert(i);
 }
