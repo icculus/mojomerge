@@ -8,9 +8,19 @@
 
 #include "Diff.h"
 #include "FolderHunk.h"
+#include "wx/wx.h"
+#include "wx/hashmap.h"
 
 namespace MojoMerge
 {
+    // Declare a hash datatype of int indexed by string for keeping track of
+    //  what folders the files exist in.
+    WX_DECLARE_STRING_HASH_MAP(int, ExistsFolderHash);
+    #define FILEEXIST_ONE       0x01
+    #define FILEEXIST_TWO       0x02
+    #define FILEEXIST_THREE     0x04
+    #define ISFOLDER            0x08
+
     enum CompareFolderOptions
     {
         CompareFolderOption_None = 0x0000,
@@ -48,8 +58,24 @@ namespace MojoMerge
         FolderHunk *Execute(CompareFolderOptions Options,
             DiffOptions FileOptions, const char *Folder1, const char *Folder2,
             const char *Folder3 = NULL);
-
     private:
+        /*  CreateChildren
+         *      Creates the child files/folder of the specified CurPath
+         *  Params
+         *      Prev
+         *          Previous item which is a sibling of this new item
+         *      CurIndex
+         *          Current index in the array of items
+         *      CurPath
+         *          Path of current folder
+         */
+        FolderHunk *CreateChildren(FolderHunk *Prev, int &CurIndex,
+            wxString CurPath);
+
+        // Array of files for each directory
+        wxArrayString MyFiles;
+        ExistsFolderHash MyHash;
+        // Diff object to performs diffs with
         Diff *DiffObject;
     };
 }

@@ -2,17 +2,23 @@
  *
  */
 
-#ifndef _COMPAREFILESUI_H
-#define _COMPAREFILESUI_H
+#ifndef _COMPAREFOLDERSUI_H
+#define _COMPAREFOLDERSUI_H
 
 #include "wx/wx.h"
 #include "DataTypes.h"
 #include "CompareUI.h"
+#include "SeparatorPanel.h"
+#include "CompareFolderPanel.h"
+#include "CompareFolders.h"
+#include "FolderMerge.h"
+#include "GNUDiff.h"
 
 namespace MojoMerge
 {
-    class CompareFoldersUI : public CompareUI
+    class CompareFoldersUI : public CompareUI, public wxTimer
     {
+        DECLARE_EVENT_TABLE()
     public:
         /*  CompareFoldersUI
          *      Create a new CompareFilesUI window
@@ -24,6 +30,15 @@ namespace MojoMerge
          *      none
          */
         CompareFoldersUI(bool ThreeWayNotTwoWay = false);
+
+        /*  CompareFoldersUI destructor
+         *      Deletes the CompareFoldersUI object
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        ~CompareFoldersUI();
 
         /*  SetFile
          *      Sets the file to use as the first, second, or third file.
@@ -51,7 +66,39 @@ namespace MojoMerge
         virtual void TwoWayComparison();
         virtual void ThreeWayComparison();
         virtual void Recompare();
+        virtual void Initialize(wxWindow *Parent);
+        virtual void OnSeparatorPainted(wxPaintEvent &event, wxDC *dc);
+
+        // Event Handlers
+        void OnTreeCollapsing(wxTreeEvent &event);
+
+        // wxTimer overrides
+        void Notify();
     private:
+        /*  AddHunks
+         *      Recursively calls itself to create the tree of folder hunks
+         *      for each item in FolderPanels array.
+         *  Params
+         *      CurHunk
+         *          First item in the hunk list
+         *      ParentX
+         *          Parent tree node of the current hunk being added
+         *  Returns
+         *      none
+         */
+        void AddHunks(FolderHunk *CurHunk, wxTreeItemId *Parent1,
+            wxTreeItemId *Parent2, wxTreeItemId *Parent3);
+
+        void SetTreeItemData(wxTreeItemId Id1, wxTreeItemId Id2,
+            wxTreeItemId Id3, FolderHunk *Hunk);
+
+        FolderMerge *MyMerge;
+        GNUDiff *MyDiff;
+        wxBoxSizer *HorizontalSizer;
+        SeparatorPanel *SeparatorPanels[MAX_DIFF_FILES - 1];
+        CompareFolderPanel *FolderPanels[MAX_DIFF_FILES];
+        DiffFileNumber LastDiffFile;
+        bool ThreeWayNotTwoWay;
     };
 }
 
