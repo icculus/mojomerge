@@ -52,7 +52,7 @@ namespace MojoMerge
 		// Temp folder
 		char TempFolder[MOJO_MAX_PATH];
         // Result of 'diff' or 'diff3' output.
-        static char *DiffResult;
+        char *DiffResult;
 
 		/*	WriteTempFile
 		 *		Writes contents of Buffer to a new temporary file.
