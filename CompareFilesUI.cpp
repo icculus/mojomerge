@@ -6,21 +6,26 @@
 #include "Application.h"
 #include "Identifiers.h"
 #include "wx/stc/stc.h"
+#include "MergeHunkRef.h"
 
 using namespace MojoMerge;
 
-#define SEPARATOR_WIDTH     50
-#define LOST_IN_SPACE       3
+#define MERGE_BUTTON_WIDTH      20
+#define MERGE_BUTTON_HEIGHT     14
+#define MERGE_BUTTON_CENTER     7
+#define LOST_IN_SPACE           3
 
 CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
 {
     // Set our member defaults
     MyMerge = NULL;
-    FirstHunk = NULL;
     TextCtrlOffset = 0;
     LastScrolledWindow = DiffFile_One;
     memset(LastScrollPosition, 0, sizeof(int) * MAX_DIFF_FILES);
     memset(IgnoreScrollChange, 0, sizeof(bool) * MAX_DIFF_FILES);
+    memset(MergeButtons, 0, sizeof(wxButton*) * (MAX_DIFF_FILES - 1) *
+        MAX_MERGE_BUTTONS);
+    memset(NextFreeMergeButton, 0, sizeof(uint32) * (MAX_DIFF_FILES - 1));
 
     // TODO - Get paths from Config object instead of hard coding them
     MyDiff = new GNUDiff("C:\\cygwin\\bin\\diff.exe", 
@@ -42,12 +47,9 @@ CompareFilesUI::~CompareFilesUI()
 {
     // Deallocate objects we created
     delete MyDiff;
-    // TODO - For now we'll remove the hunks.  Eventually the Merge object
-    //  will remove this when we pass the hunks to that object
-    if(FirstHunk)
-        FirstHunk->DeleteList();
-    // TODO - Deallocate Merge object when we use it
-
+    // Delete merge object if we used it
+    if(MyMerge)
+        delete MyMerge;
     // All other members are wxWindow based objects and are therefore cleaned
     //  up automatically upon deletion of their container.
 }
@@ -69,13 +71,20 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
         FilePanels[i] = new CompareFilePanel(this);
         // Add file panel to the sizer
         HorizontalSizer->Add(FilePanels[i], 1, wxGROW, 5);
-        if(i < LastDiffFile)
+
+        if(i == DiffFile_One)
         {
-            // Create panel that goes between each compare window
-            SeparatorPanels[i] = new wxPanel(this, ID_SEPARATOR_PANEL,
-                wxDefaultPosition, wxSize(SEPARATOR_WIDTH, SEPARATOR_WIDTH), 0);
+            // Create the first separator panel
+            SeparatorPanels[i] = new SeparatorPanel(this);
             HorizontalSizer->Add(SeparatorPanels[i], 0, wxGROW, 5);
         }
+        else if(i == DiffFile_Two && ThreeWayNotTwoWay)
+        {
+            // Create the first separator panel
+            SeparatorPanels[i] = new SeparatorPanel(this);
+            HorizontalSizer->Add(SeparatorPanels[i], 0, wxGROW, 5);
+        }
+
     }
 
     // Set sizers to that they automagically resize
@@ -139,11 +148,12 @@ void CompareFilesUI::ThreeWayComparison()
 
 void CompareFilesUI::Recompare()
 {
+    Hunk *FirstHunk;
     int i;
 
-    // Remove the hunks from the previous list if allocated
-    if(FirstHunk)
-        FirstHunk->DeleteList();
+    // Remove the previous merge object if created
+    if(MyMerge)
+        delete MyMerge;
 
     // If three-way comparison
     if(ThreeWayNotTwoWay)
@@ -153,6 +163,10 @@ void CompareFilesUI::Recompare()
             FilePanels[DiffFile_One]->GetBuffer(),
             FilePanels[DiffFile_Two]->GetBuffer(),
             FilePanels[DiffFile_Three]->GetBuffer());
+        // Create our merge object with the hunks returned from the diff
+        MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
+                FilePanels[DiffFile_Two]->GetBuffer(),
+                FilePanels[DiffFile_Three]->GetBuffer());
     }
     // If two-way comparison
     else
@@ -160,16 +174,39 @@ void CompareFilesUI::Recompare()
         FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
             FilePanels[DiffFile_One]->GetBuffer(),
             FilePanels[DiffFile_Two]->GetBuffer());
+        // Create our merge object with the hunks returned from the diff
+        MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
+                FilePanels[DiffFile_Two]->GetBuffer());
     }
 
     // Initiate a compare on each pane (mark changes based on hunks)
     for(i = DiffFile_One; i <= LastDiffFile; i++)
         FilePanels[i]->Recompare(FirstHunk, (DiffFileNumber)i);
+
+    // Redraw the separator panels since we update the files
+    SeparatorPanels[0]->Refresh();
+    if(ThreeWayNotTwoWay)
+        SeparatorPanels[1]->Refresh();
 }
 
-void CompareFilesUI::OnPanelResize(wxSizeEvent& event)
+void CompareFilesUI::OnSeparatorPainted(wxPaintEvent &event)
 {
-    Application::Debug("Panel Resize event");
+    int PanelIndex;        // Which panel to draw on
+
+    // Get the separator panel that raised the event
+    SeparatorPanel *Panel = (SeparatorPanel *)event.m_eventObject;
+    // We have to create a DC even if we don't use it
+    wxPaintDC dc(Panel);
+    if(Panel == SeparatorPanels[0])
+        PanelIndex = 0;
+    else
+        PanelIndex = 1;
+
+    // Draw the diff connection lines between the windows for any hunks that
+    //  currently exist in our hunk list.
+    DrawDiffConnectLines(&dc, PanelIndex);
+    // Let the event continue to propogate
+    event.Skip();
 }
 
 void CompareFilesUI::OnFileTextPosChanged(wxStyledTextEvent& event)
@@ -177,28 +214,12 @@ void CompareFilesUI::OnFileTextPosChanged(wxStyledTextEvent& event)
     Application::Debug("rock on");
 }
 
-void CompareFilesUI::OnFileTextPainted(wxStyledTextEvent& event)
+void CompareFilesUI::DetermineAutoScrolling(DiffFileNumber FileNumber)
 {
     int CurVisibleLine;
-
-    // Save DiffTextEdit control that raised the event
-    DiffTextEdit *TextEdit = (DiffTextEdit *)event.m_eventObject;
-    // File number associated with TextEdit control
-    DiffFileNumber FileNumber;
-
-    // Find out which file is represented by the passed control
-    if(TextEdit == FilePanels[DiffFile_One]->GetDiffTextEdit())
-        FileNumber = DiffFile_One;
-    else if(TextEdit == FilePanels[DiffFile_Two]->GetDiffTextEdit())
-        FileNumber = DiffFile_Two;
-    else
-        FileNumber = DiffFile_Three;
-
-    // After the first paint event, this offset does not change.  Only get the
-    //  value of it the first time.
-    if(!TextCtrlOffset)
-        TextCtrlOffset = FilePanels[FileNumber]->GetTextCtrlOffset() - LOST_IN_SPACE;
-
+    
+    // Get text edit control for specified file
+    DiffTextEdit *TextEdit = FilePanels[FileNumber]->GetDiffTextEdit();
     // Get the top line that is visible in the control
     CurVisibleLine = TextEdit->GetFirstVisibleLine();
     // If scroll position has moved
@@ -221,12 +242,40 @@ void CompareFilesUI::OnFileTextPainted(wxStyledTextEvent& event)
             AutoAdjustScrolling(FileNumber);
             // Retain a reference to the window that scrolled last
             LastScrolledWindow = FileNumber;
+            // Redraw the separator panels since we've scrolled one or more
+            //  of the windows
+            SeparatorPanels[0]->Refresh();
+            if(ThreeWayNotTwoWay)
+                SeparatorPanels[1]->Refresh();
         }
     }
+}
 
-    // TODO - It'd be nice to reduce the drawing of these lines somehow
-    // Draw the diff connection lines between the window(s)
-    DrawDiffConnectLines();
+// TODO - We're getting painted events all the time for some reason?
+void CompareFilesUI::OnFileTextPainted(wxStyledTextEvent& event)
+{
+
+    // Save DiffTextEdit control that raised the event
+    DiffTextEdit *TextEdit = (DiffTextEdit *)event.m_eventObject;
+    // File number associated with TextEdit control
+    DiffFileNumber FileNumber;
+
+    // Find out which file is represented by the passed control
+    if(TextEdit == FilePanels[DiffFile_One]->GetDiffTextEdit())
+        FileNumber = DiffFile_One;
+    else if(TextEdit == FilePanels[DiffFile_Two]->GetDiffTextEdit())
+        FileNumber = DiffFile_Two;
+    else
+        FileNumber = DiffFile_Three;
+
+    // After the first paint event, this offset does not change.  Only get the
+    //  value of it the first time.
+    if(!TextCtrlOffset)
+        TextCtrlOffset = FilePanels[FileNumber]->GetTextCtrlOffset() - LOST_IN_SPACE;
+
+    // Determine if something needs to be auto scrolled
+    DetermineAutoScrolling(FileNumber);
+
     // Draw the "insert after" lines for the edit control that repainted
     DrawInsertAfterLines(FileNumber);
 }
@@ -288,7 +337,7 @@ bool *IsHunk)
     // By default, line is not on a hunk
     *IsHunk = false;
     // Start looping at the first hunk
-    CurHunk = FirstHunk;
+    CurHunk = MyMerge->GetFirstHunk();
     // Loop through all the hunks
     while(CurHunk)
     {
@@ -446,7 +495,11 @@ void CompareFilesUI::DrawInsertAfterLines(DiffFileNumber FileNumber)
     int dummy;                      // Dummy value not used
     int X1, Y1, X2, Y2;             // Coordinates for drawing line
 
-    p = FirstHunk;
+    // Return if we haven't created our merge object yet
+    if(!MyMerge)
+        return;
+
+    p = MyMerge->GetFirstHunk();
     while(p)
     {
         // Get start line of hunk
@@ -454,7 +507,7 @@ void CompareFilesUI::DrawInsertAfterLines(DiffFileNumber FileNumber)
         // If end line is unspecified, it's an "insert after" hunk
         if(p->GetEnd(FileNumber) == UNSPECIFIED)
         {
-            EditDC.SetBrush(*wxRED_BRUSH);
+            //EditDC.SetBrush(*wxRED_BRUSH);
 
             // Always draw starting from left of text control
             X1 = 0;
@@ -474,52 +527,111 @@ void CompareFilesUI::DrawInsertAfterLines(DiffFileNumber FileNumber)
     }
 }
 
-void CompareFilesUI::DrawDiffConnectLines()
+void CompareFilesUI::DrawDiffConnectLines(wxDC *DC, int PanelIndex)
 {
-    Hunk *p;                        // Temporary hunk pointer
+    Hunk *p;                    // Temporary hunk pointer
+    wxButton **CurButton;       // Temp pointer to a button
+    DiffFileNumber Src, Dest;   // Source and dest file numbers for drawing
+    //wxMemoryDC MemPanel1;
+    //wxMemoryDC MemPanel2;
+    //wxClientDC *Panel1DC = new wxClientDC(SeparatorPanels[DiffFile_One]);
+    //wxClientDC *Panel2DC = NULL;
 
-    wxClientDC Panel1DC(SeparatorPanels[DiffFile_One]);
-    if(ThreeWayNotTwoWay)
+    // Return if our merge object hasn't been created yet
+    if(!MyMerge)
+        return;
+
+    DC->Clear();
+
+    // Reset the free merge button value since we're redrawing buttons
+    NextFreeMergeButton[PanelIndex] = 0;
+
+    /*// Get size of panel area
+    wxSize PanelSize = SeparatorPanels[DiffFile_One]->GetClientSize();
+    // Initialize the memory device contexts for both panels
+    wxBitmap BitmapPanel1(PanelSize.x, PanelSize.y);
+    wxBitmap BitmapPanel2(PanelSize.x, PanelSize.y);
+    MemPanel1.SelectObject(BitmapPanel1);
+    MemPanel2.SelectObject(BitmapPanel2);*/
+
+    // If we're drawing on the first panel
+    if(PanelIndex == 0)
     {
-        wxClientDC Panel2DC(SeparatorPanels[DiffFile_Two]);
-        // Clear the panel since we're drawing new lines on them.
-        Panel2DC.Clear();
+        Src = DiffFile_One;
+        Dest = DiffFile_Two;
+    }
+    // Else, drawing on the second panel
+    else
+    {
+        Src = DiffFile_Two;
+        Dest = DiffFile_Three;
     }
 
-    // Clear the panel since we're drawing new lines on them.
-    Panel1DC.Clear();
-
-    p = FirstHunk;
+    p = MyMerge->GetFirstHunk();
     while(p)
     {
         // Draw connecting line for hunk between file one and two
-        DrawSingleDiffLine(DiffFile_One, DiffFile_Two, p);
-        // If three way diff, draw line between file two and three
-        if(ThreeWayNotTwoWay)
-            DrawSingleDiffLine(DiffFile_Two, DiffFile_Three, p);
+        DrawSingleDiffLine(Src, Dest, p, DC);
         // Go to the next hunk
         p = p->GetNextHunk();
+    }
+
+    /***Paint the lines drawn in memory onto the screen***/
+    /*wxClientDC Panel1DC(SeparatorPanels[DiffFile_One]);
+    Panel1DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel1, 0, 0);
+    if(ThreeWayNotTwoWay)
+    {
+        wxClientDC Panel2DC(SeparatorPanels[DiffFile_Two]);
+        Panel2DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel2, 0, 0);
+    }*/
+
+    // Get the first button in the list associated with the file number
+    CurButton = &MergeButtons[PanelIndex][NextFreeMergeButton[PanelIndex]];
+    // Go through all of the buttons for each separator panel
+    while(*CurButton)
+    {
+        // Hide the buttons we're not using
+        (*CurButton)->Show(false);
+        // Go to next button in list
+        CurButton++;
     }
 }
 
 void CompareFilesUI::DrawSingleDiffLine(DiffFileNumber SourceNum,
-    DiffFileNumber DestNum, Hunk *HunkToDraw)
+    DiffFileNumber DestNum, Hunk *HunkToDraw, wxDC *Context)
 {
     int X1, X2, Y1, Y2;          // Coordinates for line to draw
+    // Get the file that is different in the hunk
+    DiffFileNumber FileThatIsDifferent = HunkToDraw->GetDiffFile();
 
-    // Allocate device context on the stack (required by wxWindows) for the
-    //  separator between the source and dest file
-    wxClientDC MyDC(SeparatorPanels[SourceNum]);
-
-    // Calculate coordinates for line
-    X1 = 0;
-    X2 = SEPARATOR_WIDTH;
+    // Calculate Y coordinates for line
     Y1 = CalculateY(SourceNum, HunkToDraw);
     Y2 = CalculateY(DestNum, HunkToDraw);
 
+    // If the file that is different is not the one we're drawing the buttons
+    //  for, then we shouldn't draw buttons since the source and destination
+    //  files have the same contents for the specified hunk.
+    if((FileThatIsDifferent != SourceNum) && (FileThatIsDifferent != DestNum)
+    && (FileThatIsDifferent != UNSPECIFIED))
+    {
+        // Draw lines the entire width of panel
+        X1 = 0;
+        X2 = SEPARATOR_WIDTH;
+    }
+    // Else, draw the buttons
+    else
+    {
+        // Set coordinates to compensate for buttons
+        X1 = MERGE_BUTTON_WIDTH;
+        X2 = SEPARATOR_WIDTH - MERGE_BUTTON_WIDTH;
+        // Draw merge buttons for the hunk if it's showing
+        DrawMergeButton(Y1, HunkToDraw, SourceNum, DestNum, SourceNum);
+        DrawMergeButton(Y2, HunkToDraw, DestNum, SourceNum, SourceNum);
+    }
+
     // Draw line between diffs
-    MyDC.SetBrush(*wxRED_BRUSH);
-    MyDC.DrawLine(X1, Y1, X2, Y2);
+    Context->SetPen(wxPen(*wxBLACK, 1, wxDOT));
+    Context->DrawLine(X1, Y1, X2, Y2);
 }
 
 int CompareFilesUI::CalculateY(DiffFileNumber FileNumber, Hunk *HunkToDraw)
@@ -560,9 +672,151 @@ int CompareFilesUI::CalculateY(DiffFileNumber FileNumber, Hunk *HunkToDraw)
     return Y;
 }
 
+void CompareFilesUI::DrawMergeButton(int Y, Hunk *TheHunk,
+    DiffFileNumber SourceNum, DiffFileNumber DestNum, int SeparatorIndex)
+{
+    wxButton **CurButton;   // Current button we're working with
+    int X;                  // X coordinate of button
+    wxString Arrow;         // What symbol to use for button
+
+    // Does the button go on the left or right of the panel
+    if(SourceNum < DestNum)
+        X = 0;
+    else
+        X = SEPARATOR_WIDTH - MERGE_BUTTON_WIDTH;
+
+    // Set Y so that button will be centered on that point
+    Y = Y - MERGE_BUTTON_CENTER;
+
+    // Figure out which arrow to use
+    if(SourceNum == DiffFile_One)
+        Arrow = ">>";
+    else if(SourceNum == DiffFile_Two)
+    {
+        if(DestNum == DiffFile_One)
+            Arrow = "<<";
+        else
+            Arrow = ">>";
+    }
+    else
+        Arrow = "<<";
+
+    // Get reference to next available position in array
+    CurButton = &MergeButtons[SeparatorIndex][NextFreeMergeButton[SeparatorIndex]];
+    // If there's no button allocated at the current position
+    if(!(*CurButton))
+    {
+        // Allocate a new button
+        *CurButton = new wxButton(SeparatorPanels[SeparatorIndex],
+            ID_MERGE_BUTTON, Arrow, wxPoint(X, Y),
+            wxSize(MERGE_BUTTON_WIDTH, MERGE_BUTTON_HEIGHT));
+    }
+    else
+    {
+        // Move the existing button to the appropriate position
+        (*CurButton)->Move(X, Y);
+        (*CurButton)->SetLabel(Arrow);
+    }
+
+    // Creates a referentual bind between the button and the hunk
+    (*CurButton)->UnRef();
+    (*CurButton)->SetRefData(new MergeHunkRef(TheHunk, SourceNum, DestNum));
+
+    // Show the button
+    (*CurButton)->Show();
+    (*CurButton)->Refresh();
+
+    // Increment to the next index since we added another button
+    NextFreeMergeButton[SeparatorIndex]++;
+}
+
+void CompareFilesUI::OnMergeButtonClick(wxCommandEvent& event)
+{
+    // Get HunkRef associated with button that raised the event
+    MergeHunkRef *Ref = (MergeHunkRef *)event.m_eventObject->GetRefData();
+    // Get the hunk associated with the HunkRef
+    Hunk *MyHunk = (Hunk *)Ref->GetHunk();
+    // Get the source and destination files for the button
+    DiffFileNumber Source = Ref->GetSource();
+    DiffFileNumber Dest = Ref->GetDest();
+    // Resolve the diff associated with the button and show the results
+    ShowTransaction(MyMerge->ResolveDiff(MyHunk, Source, Dest));
+}
+
+void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
+{
+    int Pos;        // Position in text edit control
+    int i;          // Generic counter variable
+    int EndLine;    // Line to stop processing lines at
+    // Get details on what happened in the transaction
+    const MergeChange *LastChange = NewTransaction->GetLastChange();
+    // Get text edit control associated with file number
+    DiffTextEdit *TextEdit = FilePanels[LastChange->FileNumber]->
+        GetDiffTextEdit();
+    // Get buffer associated with file
+    LineBuffer *Buffer = MyMerge->GetBuffer(LastChange->FileNumber);
+
+    switch(LastChange->Type)
+    {
+        case MergeChangeType_Delete:
+            // Delete the specified lines from the control
+            TextEdit->DeleteLines(LastChange->Start - 1, LastChange->Length);
+            break;
+        case MergeChangeType_Insert:
+            // Get starting position for inserting lines (Start is 1-based)
+            Pos = TextEdit->PositionFromLine(LastChange->Start - 1);
+            EndLine = (int)LastChange->Length + LastChange->Start - 1;
+            for(i = LastChange->Start; i <= EndLine; i++)
+            {
+                // Insert line into text edit control
+                TextEdit->InsertText(Pos, Buffer->GetLine(i));
+                // Increment the position to the length of the line we just added
+                Pos += (int)strlen(Buffer->GetLine(i));
+            }
+            break;
+        case MergeChangeType_Replace:
+            TextEdit->DeleteLines(LastChange->Start - 1, LastChange->Length);
+            // Get starting position for inserting lines (Start is 1-based)
+            Pos = TextEdit->PositionFromLine(LastChange->Start - 1);
+            EndLine = (int)LastChange->Length + LastChange->Start - 1;
+            for(i = LastChange->Start; i <= EndLine; i++)
+            {
+                // Insert line into text edit control
+                TextEdit->InsertText(Pos, Buffer->GetLine(i));
+                // Increment the position to the length of the line we just added
+                Pos += (int)strlen(Buffer->GetLine(i));
+            }
+            break;
+        default:
+            // Shouldn't get here
+            assert(0);
+    }
+
+    // Refresh the changes marked on each file
+    for(i = DiffFile_One; i <= LastDiffFile; i++)
+    {
+        FilePanels[i]->Recompare(MyMerge->GetFirstHunk(), (DiffFileNumber)i);
+        // Refresh the "insert after" lines for each file
+        DrawInsertAfterLines((DiffFileNumber)i);
+    }
+
+    // Redraw the separator panels since we've changed text
+    SeparatorPanels[0]->Refresh();
+    if(ThreeWayNotTwoWay)
+        SeparatorPanels[1]->Refresh();
+
+    // Force the auto scroll to work even though we haven't scrolled anything
+    LastScrollPosition[LastChange->FileNumber] = 0;
+    // Auto scroll so that files are now lined up based on the file that
+    //  was changed.
+    DetermineAutoScrolling(LastChange->FileNumber);
+}
+
 // Event mappings for the file panel
 BEGIN_EVENT_TABLE(CompareFilesUI, wxPanel)
+    EVT_BUTTON(ID_MERGE_BUTTON, CompareFilesUI::OnMergeButtonClick)
     //EVT_STC_POSCHANGED(ID_FILE_TEXT_EDIT, CompareFilesUI::OnFileTextPosChanged)
     EVT_STC_PAINTED(ID_FILE_TEXT_EDIT, CompareFilesUI::OnFileTextPainted)
-    //EVT_CUSTOM(wxEVT_SIZE, ID_SEPARATOR_PANEL, CompareFilesUI::OnPanelResize)
+    //EVT_PAINT(CompareFilesUI::OnPanelPaint)
+    //EVT_CUSTOM(wxEVT_SIZE, ID_SEPARATOR_PANEL, CompareFilesUI::OnPanelPaint)
 END_EVENT_TABLE()
