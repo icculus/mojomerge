@@ -6,8 +6,12 @@
 #include "ConfigUI.h"
 #include "Config.h"
 #include <stdio.h>
-#include <windows.h>
 #include <stdarg.h>
+
+// Used for windows specific API calls
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 using namespace MojoMerge;
 
@@ -284,7 +288,7 @@ const char *Application::GetTempFolder()
     {
         TempFolder = new char[MOJO_MAX_PATH];
 // If running on Windows, use WIN32 API call
-#ifdef _WINDOWS
+#ifdef WIN32
         int i = GetTempPath(MOJO_MAX_PATH, TempFolder);
         // GetTempPath return 0 on failure
         assert(i != 0);
