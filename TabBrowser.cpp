@@ -45,7 +45,7 @@ TabBrowser::TabBrowser(wxWindow *Container)
 
 void TabBrowser::AddWindow(TabWindow *Window)
 {
-    Window->Initialize(this);
+    Window->Initialize(Notebook);
     Notebook->AddPage(Window, Window->GetName(), true);
 }
 
