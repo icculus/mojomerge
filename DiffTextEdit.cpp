@@ -73,6 +73,7 @@ void DiffTextEdit::MarkClearAll()
 
 void DiffTextEdit::EOFStyleBugHack()
 {
+    // TODO - The BlankLineStyleBugHack() seems to fix this problem
     // TODO - Should fix scintilla with this bug
     // Add text and remove text from the last line to get
     //  around a seemingly strange bug in scintilla.  If we
