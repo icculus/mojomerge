@@ -66,10 +66,28 @@ TabWindow *TabBrowser::GetActiveWindow()
 
     Page = Notebook->GetSelection();
     // There must be a valid page selected
-    assert(Page != -1);
+    if(Page == -1)
+        CurrentPage = NULL;
+    else
+    {
+        // Return the window to the caller
+        CurrentPage = (TabWindow *)Notebook->GetPage(Page);
+        assert(CurrentPage);
+    }
+    return CurrentPage;
+}
 
+void TabBrowser::UpdateNameForActiveWindow()
+{
+    TabWindow *CurrentPage;
+    int Page;
+
+    Page = Notebook->GetSelection();
+    // There must be a valid page selected
+    assert(Page != -1);
     // Return the window to the caller
     CurrentPage = (TabWindow *)Notebook->GetPage(Page);
+    // Page object must be valid
     assert(CurrentPage);
-    return CurrentPage;
+    Notebook->SetPageText(Page, CurrentPage->GetName());
 }
