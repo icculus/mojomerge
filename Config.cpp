@@ -3,6 +3,15 @@
  */
 
 #include "Config.h"
+#include "Application.h"
+
+// Platform specific #includes and #defines
+#ifdef WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
 
 using namespace MojoMerge;
 
@@ -116,10 +125,20 @@ void Config::SetUndoSize(uint32 Size)
 wxString Config::GetDiffPath()
 {
     wxString Value;
+    wxString DefaultValue;
+    char cwd[MOJO_MAX_PATH];
+
+    // Get current working directory
+    getcwd(cwd, MOJO_MAX_PATH);
+    // Set default value
+    DefaultValue.Append(cwd);
+    DefaultValue.Append(DIR_SEPARATOR);
+    DefaultValue.Append(DIFF_FOLDER_DEFAULT);
 
     // MyConfigData can't be NULL
     assert(MyConfigData);
-    MyConfigData->Read(wxT("DiffPath"), &Value, DIFF_FOLDER_DEFAULT);
+    MyConfigData->Read(wxT("DiffPath"), &Value, DefaultValue);
+    Application::Debug("Diff value = %s", Value);
 
     return Value;
 }
@@ -136,10 +155,20 @@ void Config::SetDiffPath(wxString &Value)
 wxString Config::GetDiff3Path()
 {
     wxString Value;
+    wxString DefaultValue;
+    char cwd[MOJO_MAX_PATH];
+
+    // Get current working directory
+    getcwd(cwd, MOJO_MAX_PATH);
+    // Set default value
+    DefaultValue.Append(cwd);
+    DefaultValue.Append(DIR_SEPARATOR);
+    DefaultValue.Append(DIFF3_FOLDER_DEFAULT);
 
     // MyConfigData can't be NULL
     assert(MyConfigData);
-    MyConfigData->Read(wxT("Diff3Path"), &Value, DIFF3_FOLDER_DEFAULT);
+    MyConfigData->Read(wxT("Diff3Path"), &Value, DefaultValue);
+    Application::Debug("Diff3 path = %s", Value);
 
     return Value;
 }
