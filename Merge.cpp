@@ -13,6 +13,7 @@ Merge::Merge(Hunk *FirstHunk, const char *Buffer1, const char *Buffer2,
     const char *Buffer3)
 {
     // Initialize members
+    // First hunk is a dummy hunk list head
     this->FirstHunk = NULL;
     this->Buffer[DiffFile_One] = NULL;
     this->Buffer[DiffFile_Two] = NULL;
@@ -21,11 +22,11 @@ Merge::Merge(Hunk *FirstHunk, const char *Buffer1, const char *Buffer2,
 
     // The FirstHunk can't be NULL
     assert(FirstHunk);
-    // Save the first hunk in the list
-    this->FirstHunk = FirstHunk;
     // The first two buffers can't be NULL either
     assert(Buffer1);
     assert(Buffer2);
+    // Create linked list head
+    this->FirstHunk = new Hunk(FirstHunk);
     // Save the buffer references
     this->Buffer[DiffFile_One] = new LineBuffer(Buffer1);
     this->Buffer[DiffFile_Two] = new LineBuffer(Buffer2);
@@ -37,8 +38,8 @@ Merge::Merge(Hunk *FirstHunk, const char *Buffer1, const char *Buffer2,
     assert(UndoBuffer);
 }
 
-Hunk *Merge::ResolveDiff(Hunk *MergeHunk, DiffFileNumber SourceFileNumber,
-    DiffFileNumber DestFileNumber)
+FileMergeTransaction *Merge::ResolveDiff(Hunk *MergeHunk,
+    DiffFileNumber SourceFileNumber, DiffFileNumber DestFileNumber)
 {
     // Create new merge transaction that will perform the resolve.  This also
     //  executes the transaction
@@ -47,13 +48,19 @@ Hunk *Merge::ResolveDiff(Hunk *MergeHunk, DiffFileNumber SourceFileNumber,
         DestFileNumber);
     // Add the transaction to the undo buffer
     UndoBuffer->PushTransaction(NewTransaction);
-    // TODO - Decide what makes sense to return to the CompareUI class
-    return NULL;
+    // Return the new transaction object
+    return NewTransaction;
 }
 
 LineBuffer *Merge::GetBuffer(DiffFileNumber FileNumber)
 {
     return Buffer[FileNumber];
+}
+
+Hunk *Merge::GetFirstHunk()
+{
+    // First hunk is always a dummy "list head"
+    return FirstHunk->GetNextHunk();
 }
 
 Merge::~Merge()
