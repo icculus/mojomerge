@@ -73,6 +73,8 @@ Menu::Menu()
     DebugMenu->Append(ID_TEST_TWOWAY_MERGE_MENU, wxT("Test two-way merge"), wxT(""));
     DebugMenu->Append(ID_TEST_STACK_MENU, wxT("Test Stack"), wxT(""));
     DebugMenu->Append(ID_TEST_COMPAREFOLDERS_MENU, wxT("Test CompareFolders"), wxT(""));
+    DebugMenu->Append(ID_TEST_COMPAREFILESUI_MENU, wxT("Test CompareFilesUI"), wxT(""));
+    DebugMenu->Append(ID_TEST_COMPAREFILESUI3WAY_MENU, wxT("Test CompareFilesUI 3-way"), wxT(""));
     Append(DebugMenu, wxT("Debug"));
 #endif
 }

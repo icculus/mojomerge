@@ -196,6 +196,16 @@ void MainWindow::OnTestCompareFolders(wxCommandEvent& event)
     // Test the CompareFolders object
     Test::TestCompareFolders();
 }
+void MainWindow::OnTestCompareFilesUI(wxCommandEvent& event)
+{
+    // Test the CompareFolders object
+    Test::TestCompareFilesUI();
+}
+void MainWindow::OnTestCompareFilesUI3Way(wxCommandEvent& event)
+{
+    // Test the CompareFolders object
+    Test::TestCompareFilesUI3Way();
+}
 
 #endif
 
@@ -232,6 +242,8 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_TEST_TWOWAY_MERGE_MENU, MainWindow::OnTestTwoWayMerge)
     EVT_MENU(ID_TEST_STACK_MENU, MainWindow::OnTestStack)
     EVT_MENU(ID_TEST_COMPAREFOLDERS_MENU, MainWindow::OnTestCompareFolders)
+    EVT_MENU(ID_TEST_COMPAREFILESUI_MENU, MainWindow::OnTestCompareFilesUI)
+    EVT_MENU(ID_TEST_COMPAREFILESUI3WAY_MENU, MainWindow::OnTestCompareFilesUI3Way)
 #endif
 END_EVENT_TABLE()
 

@@ -9,13 +9,12 @@
 #include "Merge.h"
 #include "Stack.h"
 #include <stdio.h>
+#include "wx/dir.h"
 
 using namespace MojoMerge;
 
 #define TEST_DIFFPATH       "C:\\cygwin\\bin\\diff.exe"
 #define TEST_DIFF3PATH      "C:\\cygwin\\bin\\diff3.exe"
-// Maximum file size that the test files can be
-#define TEST_MAXFILESIZE    10240
 // Names of each test file used for diff testing
 #define TEST_FILE1          "testfile1.txt"
 #define TEST_FILE2          "testfile2.txt"
@@ -34,11 +33,11 @@ Hunk *Test::TestGNUDiff_TwoWay()
     // Object used to perform diffs
     GNUDiff MyDiff(TEST_DIFFPATH, TEST_DIFF3PATH, Application::GetTempFolder());
     // Buffers that contain data from each file being compared
-    char Buffer1[TEST_MAXFILESIZE];
-    char Buffer2[TEST_MAXFILESIZE];
+    char *Buffer1;
+    char *Buffer2;
     
-    ReadTestFile(TEST_FILE1, Buffer1);
-    ReadTestFile(TEST_FILE2, Buffer2);
+    Buffer1 = Application::ReadFile(TEST_FILE1);
+    Buffer2 = Application::ReadFile(TEST_FILE2);
 
     // Test two-way comparison
     MyHunk = MyDiff.CompareFiles(DiffOption_None, Buffer1, Buffer2);
@@ -63,6 +62,11 @@ Hunk *Test::TestGNUDiff_TwoWay()
         Application::Debug("No differences encountered");
 
     Application::Debug("GNUDiff two-way test complete!\n");
+
+    // Delete the file buffers we read
+    delete Buffer1;
+    delete Buffer2;
+
     return MyHunk;
 }
 
@@ -76,13 +80,13 @@ Hunk *Test::TestGNUDiff_ThreeWay()
     // Object used to perform diffs
     GNUDiff MyDiff(TEST_DIFFPATH, TEST_DIFF3PATH, Application::GetTempFolder());
     // Buffers that contain data from each file being compared
-    char Buffer1[TEST_MAXFILESIZE];
-    char Buffer2[TEST_MAXFILESIZE];
-    char Buffer3[TEST_MAXFILESIZE];
+    char *Buffer1;
+    char *Buffer2;
+    char *Buffer3;
     
-    ReadTestFile(TEST_FILE1, Buffer1);
-    ReadTestFile(TEST_FILE2, Buffer2);
-    ReadTestFile(TEST_FILE3, Buffer3);
+    Buffer1 = Application::ReadFile(TEST_FILE1);
+    Buffer2 = Application::ReadFile(TEST_FILE2);
+    Buffer3 = Application::ReadFile(TEST_FILE3);
 
     // Test three-way comparison
     MyHunk = MyDiff.CompareFiles(DiffOption_None, Buffer1, Buffer2, Buffer3);
@@ -107,6 +111,11 @@ Hunk *Test::TestGNUDiff_ThreeWay()
     else
         Application::Debug("No differences encountered");
 
+    // Delete file buffers
+    delete Buffer1;
+    delete Buffer2;
+    delete Buffer3;
+
     Application::Debug("GNUDiff three-way test complete!\n");
     return MyHunk;
 }
@@ -117,14 +126,14 @@ void Test::TestLineBuffer()
 
     uint32 i;
     uint32 Count;
-    char Buffer1[TEST_MAXFILESIZE];
-    char Buffer2[TEST_MAXFILESIZE];
+    char *Buffer1;
+    char *Buffer2;
     LineBuffer *LineBuffer1;
     LineBuffer *LineBuffer2;
 
     // Read in two test files
-    ReadTestFile(TESTFILE_LINEBUFFER1, Buffer1);
-    ReadTestFile(TESTFILE_LINEBUFFER2, Buffer2);
+    Buffer1 = Application::ReadFile(TESTFILE_LINEBUFFER1);
+    Buffer2 = Application::ReadFile(TESTFILE_LINEBUFFER2);
     // Create line buffer objects with the char buffers
     LineBuffer1 = new LineBuffer(Buffer1);
     LineBuffer2 = new LineBuffer(Buffer2);
@@ -156,29 +165,8 @@ void Test::TestLineBuffer()
 
     delete LineBuffer2;
     delete LineBuffer1;
-}
-
-void Test::ReadTestFile(const char *Filename, char *Buffer)
-{
-    // Number of characters read from file
-    size_t CharsRead;
-
-    // Filename or Buffer can't be NULL
-    assert(Filename);
-    assert(Buffer);
-    // Open file for reading
-    FILE *Stream = fopen(Filename, "rb");
-    // Stream can't be NULL
-    assert(Stream);
-    // TODO - Read the file regardless of file size
-    // Read contents of file into buffer (up to TEST_MAXFILESIZE bytes)
-    CharsRead = fread(Buffer, sizeof(char), TEST_MAXFILESIZE - 1, Stream);
-    // Add the terminating null character
-    Buffer[CharsRead] = 0x00;
-    // Close the file stream
-    int i = fclose(Stream);
-    // Make sure file closed successfully
-    assert(i == 0);
+    delete Buffer1;
+    delete Buffer2;
 }
 
 void Test::TestMerge_TwoWay()
@@ -187,16 +175,16 @@ void Test::TestMerge_TwoWay()
     Hunk *CurHunk, *NextHunk;
     Merge *MyMerge;
     LineBuffer *FileBuffer;
-    int i;
+    uint32 i;
 
     // Get some diff hunks from our diff test
     MyHunk = Test::TestGNUDiff_TwoWay();
 
     // Buffers that contain data from each file being compared
-    char Buffer1[TEST_MAXFILESIZE];
-    char Buffer2[TEST_MAXFILESIZE];
-    ReadTestFile(TEST_FILE1, Buffer1);
-    ReadTestFile(TEST_FILE2, Buffer2);
+    char *Buffer1;
+    char *Buffer2;
+    Buffer1 = Application::ReadFile(TEST_FILE1);
+    Buffer2 = Application::ReadFile(TEST_FILE2);
 
     // Create the merge object
     MyMerge = new Merge(MyHunk, Buffer1, Buffer2);
@@ -221,6 +209,9 @@ void Test::TestMerge_TwoWay()
 
     // Done with the merge object...gone!!
     delete MyMerge;
+    // Remove the file buffers
+    delete Buffer1;
+    delete Buffer2;
 }
 
 // TODO - Need to write test case for three-way diff
@@ -301,4 +292,14 @@ void Test::TestCompareFolders()
 {
     // TODO - GSR needs to fill this in
     assert(0);
+}
+
+void Test::TestCompareFilesUI()
+{
+    Application::AddTestTab(new CompareFilesUI());
+}
+
+void Test::TestCompareFilesUI3Way()
+{
+    Application::AddTestTab(new CompareFilesUI(true));
 }

@@ -67,8 +67,25 @@ namespace MojoMerge
          *      none
          */
         static void TestCompareFolders();
+
+        /*  TestCompareFilesUI
+         *      Tests the CompareFilesUI object
+         *
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void TestCompareFilesUI();
+        /*  TestCompareFilesUI3Way
+         *      Tests the CompareFilesUI object with 3-way diff
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void TestCompareFilesUI3Way();
     private:
-        static void ReadTestFile(const char *Filename, char *Buffer);
     };
 }
 
