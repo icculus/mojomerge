@@ -4,6 +4,7 @@
 
 #include "SeparatorPanel.h"
 #include "Identifiers.h"
+#include "Application.h"
 
 using namespace MojoMerge;
 
@@ -17,12 +18,16 @@ SeparatorPanel::SeparatorPanel(CompareUI *CompareWindow) :
 
 void SeparatorPanel::OnPaint(wxPaintEvent &event)
 {
+    // We have to create a DC even if we don't use it
+    wxPaintDC dc(this);
+    Application::Debug("SeparatorPanel::OnPaint");
     // Call the handler function in the compare window
-    CompareWindow->OnSeparatorPainted(event);
+    CompareWindow->OnSeparatorPainted(event, &dc);
+    // Let the event continue to propogate
+    event.Skip();
 }
 
 // Event mappings for the panel
 BEGIN_EVENT_TABLE(SeparatorPanel, wxPanel)
     EVT_PAINT(SeparatorPanel::OnPaint)
 END_EVENT_TABLE()
-
