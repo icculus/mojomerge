@@ -32,6 +32,9 @@ namespace MojoMerge
         virtual void TwoWayComparison() = 0;
         virtual void ThreeWayComparison() = 0;
         virtual void Recompare() = 0;
+        
+        // Event handler that gets called by the SeparatorPanel class
+        virtual void OnSeparatorPainted(wxPaintEvent &event) = 0;
     };
 }
 
