@@ -7,6 +7,7 @@
 
 #include "DataTypes.h"
 #include "Transaction.h"
+#include "Stack.h"
 
 namespace MojoMerge
 {
@@ -26,16 +27,13 @@ namespace MojoMerge
          *      This will inadvertently clear the redo stack since this is
          *      a new transaction.  Items that are removed from the redo
          *      stack are deallocated as well.
-         *
-         *      This method also called the Transaction::Redo method in order
-         *      to perform the initial transaction for the first time.
          *  Params
          *      Transaction
          *          UndoTransaction object to add.
          *  Returns
          *      none
          */
-        void PushTransaction(Transaction *Transaction);
+        void PushTransaction(Transaction *NewTransaction);
 
         /*  UndoTransaction
          *      Removes the transaction from the top of the stack.  When
@@ -68,8 +66,10 @@ namespace MojoMerge
          *      none
          */
         ~TransactionBuffer();
-
     private:
+        // Our stacks that we use for undo and redo stuff
+        Stack<Transaction> *UndoBuffer;
+        Stack<Transaction> *RedoBuffer;
     };
 }
 #endif
