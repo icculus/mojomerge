@@ -77,6 +77,28 @@ namespace MojoMerge
          */
         void EOFStyleBugHack();
 
+        /*  BlankLineStyleBugHack
+         *      Work around for a styling bug in the wxStyledTextCtrl.  See the
+         *      function implementation for specifics.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        void BlankLineStyleBugHack();
+
+        /*  DeleteLines
+         *      Removes the specified lines from the control
+         *  Params
+         *      Start
+         *          0-based starting index
+         *      Length
+         *          Number of lines to remove
+         *  Returns
+         *      none
+         */
+        void DeleteLines(int Start, int Length);
+
         void ConfigSetFont(wxFont &NewFont);
         void ConfigSetShowEOL(bool ShowEOL);
         void ConfigSetChangeColor(wxColour &Foreground, wxColour &Background);
