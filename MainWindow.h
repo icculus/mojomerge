@@ -27,8 +27,6 @@ namespace MojoMerge
          */
         TabBrowser *GetTabBrowser();
     private:
-        DECLARE_EVENT_TABLE()
-
         /*  Menu Event Handlers
          *      These functions handle the associated menu events.  They will
          *      simply call the Application command functions assoicated with
@@ -71,11 +69,16 @@ namespace MojoMerge
         void OnTestTwoWayMerge(wxCommandEvent& event);
         void OnTestStack(wxCommandEvent& event);
         void OnTestCompareFolders(wxCommandEvent& event);
+        void OnTestCompareFilesUI(wxCommandEvent& event);
+        void OnTestCompareFilesUI3Way(wxCommandEvent& event);
 #endif
         // Objects contained inside the window
         Menu *MyMenu;
         Toolbar *MyToolbar;
         TabBrowser *MyTabBrowser;
+
+        // Use the event table defined in MainWindow.cpp
+        DECLARE_EVENT_TABLE()
     };
 }
 
