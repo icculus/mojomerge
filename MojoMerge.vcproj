@@ -127,6 +127,9 @@
 				RelativePath="CompareFilesUI.cpp">
 			</File>
 			<File
+				RelativePath=".\CompareFolders.cpp">
+			</File>
+			<File
 				RelativePath=".\CompareFoldersUI.cpp">
 			</File>
 			<File
@@ -137,6 +140,9 @@
 			</File>
 			<File
 				RelativePath=".\FileMergeTransaction.cpp">
+			</File>
+			<File
+				RelativePath=".\FolderHunk.cpp">
 			</File>
 			<File
 				RelativePath="GNUDiff.cpp">
@@ -165,6 +171,9 @@
 			<File
 				RelativePath="Toolbar.cpp">
 			</File>
+			<File
+				RelativePath=".\TransactionBuffer.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -174,6 +183,9 @@
 			</File>
 			<File
 				RelativePath="CompareFilesUI.h">
+			</File>
+			<File
+				RelativePath=".\CompareFolders.h">
 			</File>
 			<File
 				RelativePath="CompareFoldersUI.h">
@@ -195,6 +207,9 @@
 			</File>
 			<File
 				RelativePath=".\FileMergeTransaction.h">
+			</File>
+			<File
+				RelativePath=".\FolderHunk.h">
 			</File>
 			<File
 				RelativePath="GNUDiff.h">
@@ -219,6 +234,9 @@
 			</File>
 			<File
 				RelativePath="Print.h">
+			</File>
+			<File
+				RelativePath=".\Stack.h">
 			</File>
 			<File
 				RelativePath="TabBrowser.h">
