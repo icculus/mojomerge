@@ -3,6 +3,15 @@
  *  merges and manual edit changes to the buffer data for each file.
  *
  */
+#ifndef _MERGE_H_
+#define _MERGE_H_
+
+#include "Hunk.h"
+#include "LineBuffer.h"
+#include "FileMergeTransaction.h"
+#include "TransactionBuffer.h"
+#include <stdlib.h>
+
 namespace MojoMerge
 {
     class Merge
@@ -31,12 +40,12 @@ namespace MojoMerge
          *      SourceFileNumber".
          *      
          *      The passed hunk object is deleted.  If the hunk was only
-         *      partially resolved (as would be the case in a three-way
+         *      partially resolved (as may be the case in a three-way
          *      hunk), then a new Hunk object is created and placed in
          *      the linked list in the same position as the passed hunk.
          *
-         *      IMPORTANT: Since the passed hunk object is deleted, you should
-         *      no longer reference that object after a call to ResolveDiff.
+         *      IMPORTANT: Since the passed hunk object is no longer in the
+         *      list (added to the Undo object), it should not be referenced.
          *
          *      Also, this function assumes that the hunk is part of the
          *      list associated with this Merge class.  Results are undefined
@@ -50,16 +59,32 @@ namespace MojoMerge
          *      DestFileNumber
          *          File number that the change will be written to.  This file
          *          number must be different than SourceFileNumber.
-         *      HunkResolved
-         *          ResolveDiff writes a TRUE to this variable if the action
-         *          resulting in the hunk being completely resolved.  Otherwise
-         *          FALSE is written to this variable.
          *  Returns
          *      Returns a pointer to new hunk, or NULL if the hunk was
          *      completely resolved.
          */
         Hunk *ResolveDiff(Hunk *MergeHunk, DiffFileNumber SourceFileNumber,
             DiffFileNumber DestFileNumber);
+
+        /*  Undo
+         *      Calls the Undo::Undo method, returning the result of the Undo
+         *      call as a FileMergeTransaction
+         *  Params
+         *      none
+         *  Returns
+         *      Return value of Undo::Undo (casted to a FileMergeTransaction)
+         */
+        FileMergeTransaction *Undo();
+
+        /*  Redo
+         *      Calls the Undo::Redo method, returning the result of the Undo
+         *      call as a FileMergeTransaction
+         *  Params
+         *      none
+         *  Returns
+         *      Return value of Undo::Undo (casted to a FileMergeTransaction)
+         */
+        FileMergeTransaction *Redo();
 
         /*  Merge Destructor
          *  Params
@@ -69,16 +94,12 @@ namespace MojoMerge
          */
         ~Merge();
     private:
-        // First hunk in linked list of changes.  This hunk is actually a bogus
-        // hunk that never directly gets referenced.  It is used to establish
-        // a head of the linked list that will never be removed.  To get to the
-        // first hunk, use HunkHead->Next;
-        Hunk *HunkHead;
+        // First hunk in linked list of changes.
+        Hunk *FirstHunk;
         // Buffers for keeping track of merge changes for each file
-        LineBuffer *Buffer1;
-        LineBuffer *Buffer2;
-        LineBuffer *Buffer3;
+        LineBuffer *Buffer[MAX_DIFF_FILES];
         // Log for undoing merges
-        UndoBuffer *Undo;
-    }
+        TransactionBuffer *UndoBuffer;
+    };
 }
+#endif
