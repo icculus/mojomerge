@@ -10,6 +10,7 @@
 #ifndef _TABWINDOW_H
 #define _TABWINDOW_H
 
+#include "Datatypes.h"
 #include "wx/wx.h"
 
 namespace MojoMerge
@@ -78,6 +79,17 @@ namespace MojoMerge
          *      none
          */
         virtual void Initialize(wxWindow *Parent) = 0;
+
+        /*  RequestCommandStatus
+         *      Called for requesting what commands are applicable for the
+         *      CompareUI window at that given point in time.
+         *  Params
+         *      none
+         *  Returns
+         *      Mask of command status flags that are valid
+         */
+        virtual uint32 RequestCommandStatus() = 0;
+
     protected:
         // ID of TabWindow (see TabWindowID definition for more info)
         int ID;

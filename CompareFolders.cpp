@@ -5,65 +5,69 @@
 
 using namespace MojoMerge;
 
-// This small class provides our own object to traverse directories
-class DirTraverser : public wxDirTraverser
+namespace MojoMerge
 {
-public:
-    DirTraverser(wxArrayString *Array, ExistsFolderHash *Hash, wxString Folder,
-    int FileExistConstant)
+    // This small class provides our own object to traverse directories
+    class DirTraverser : public wxDirTraverser
     {
-        // Add "\" to end of folder if not present.  This is so we know to cut
-        //  it out of the path when we add the entries
-        // TODO - Add platform specific separator
-        if(Folder[Folder.Length() - 1] != '\\')
-            Folder.Append('\\');
-        this->Array = Array;
-        this->Folder = Folder;
-        this->PathStart = Folder.Length();
-        this->Hash = Hash;
-        this->FileExistConstant = FileExistConstant;
-    }
+    public:
+        DirTraverser(wxArrayString *Array, ExistsFolderHash *Hash,
+            wxString Folder,
+        int FileExistConstant)
+        {
+            // Add "\" to end of folder if not present.  This is so we know to 
+            //  cut it out of the path when we add the entries
+            // TODO - Add platform specific separator
+            if(Folder[Folder.Length() - 1] != DIR_SEPARATOR)
+                Folder.Append(DIR_SEPARATOR);
+            this->Array = Array;
+            this->Folder = Folder;
+            this->PathStart = Folder.Length();
+            this->Hash = Hash;
+            this->FileExistConstant = FileExistConstant;
+        }
 
-    void AddItem(const wxString& filename, bool IsDir = false)
-    {
-        // Extract just the unique part of the path
-        wxString Path = filename.Mid(PathStart);
-        // Add item to our hash table for keeping track of which folders this
-        //  path occurs in
-        // TODO - Add case insensitivity for Win32
-        Application::Debug("%s: Hash entry = %d", Path, (*Hash)[Path]);
-        // If it's a directoy, retain that info in our item data
-        if(IsDir)
-            (*Hash)[Path] = (*Hash)[Path] | FileExistConstant | ISFOLDER;
-        else
-            (*Hash)[Path] = (*Hash)[Path] | FileExistConstant;
-        Application::Debug("Hash entry now = %d", (*Hash)[Path]);
-        // Add the path to our array of paths if it doesn't already exist
-        if(Array->Index(Path) == wxNOT_FOUND)
-            Array->Add(Path);
-    }
+        void AddItem(const wxString& filename, bool IsDir = false)
+        {
+            // Extract just the unique part of the path
+            wxString Path = filename.Mid(PathStart);
+            // Add item to our hash table for keeping track of which folders
+            //  this path occurs in
+            // TODO - Add case insensitivity for Win32
+            Application::Debug("%s: Hash entry = %d", Path, (*Hash)[Path]);
+            // If it's a directoy, retain that info in our item data
+            if(IsDir)
+                (*Hash)[Path] = (*Hash)[Path] | FileExistConstant | ISFOLDER;
+            else
+                (*Hash)[Path] = (*Hash)[Path] | FileExistConstant;
+            Application::Debug("Hash entry now = %d", (*Hash)[Path]);
+            // Add the path to our array of paths if it doesn't already exist
+            if(Array->Index(Path) == wxNOT_FOUND)
+                Array->Add(Path);
+        }
 
-    virtual wxDirTraverseResult OnFile(const wxString& filename)
-    {
-        AddItem(filename);
-        return wxDIR_CONTINUE;
-    }
+        virtual wxDirTraverseResult OnFile(const wxString& filename)
+        {
+            AddItem(filename);
+            return wxDIR_CONTINUE;
+        }
 
-    virtual wxDirTraverseResult OnDir(const wxString& dirname)
-    {
-        AddItem(dirname, true);
-        return wxDIR_CONTINUE;
-    }
-private:
-    wxArrayString *Array;
-    wxString Folder;
-    DiffFileNumber FolderNumber;
-    ExistsFolderHash *Hash;
-    int FileExistConstant;
-    // Start character of files and directories added.  This is the first
-    //  character position after the root path.
-    size_t PathStart;
-};
+        virtual wxDirTraverseResult OnDir(const wxString& dirname)
+        {
+            AddItem(dirname, true);
+            return wxDIR_CONTINUE;
+        }
+    private:
+        wxArrayString *Array;
+        wxString Folder;
+        DiffFileNumber FolderNumber;
+        ExistsFolderHash *Hash;
+        int FileExistConstant;
+        // Start character of files and directories added.  This is the first
+        //  character position after the root path.
+        size_t PathStart;
+    };
+}
 
 CompareFolders::CompareFolders(Diff *DiffObject)
 {
@@ -211,7 +215,7 @@ FolderHunk *CompareFolders::CreateChildren(FolderHunk *Prev, int &CurIndex, wxSt
         }
         // Just extract the last part of the path
         //TODO - Make this platform independant
-        BarePath = CurPath.Mid(CurPath.Find('\\', true) + 1);
+        BarePath = CurPath.Mid(CurPath.Find(DIR_SEPARATOR, true) + 1);
         // Get extended item information
         ItemInfo = MyHash[CurPath];
         // Create folder hunk with all of it's children

@@ -20,7 +20,6 @@ void SeparatorPanel::OnPaint(wxPaintEvent &event)
 {
     // We have to create a DC even if we don't use it
     wxPaintDC dc(this);
-    Application::Debug("SeparatorPanel::OnPaint");
     // Call the handler function in the compare window
     CompareWindow->OnSeparatorPainted(event, &dc);
     // Let the event continue to propogate

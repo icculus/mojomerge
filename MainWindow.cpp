@@ -13,28 +13,39 @@ MainWindow::MainWindow()
     // Initialize member variables
     MyMenu = NULL;
     MyToolbar = NULL;
+    MyStatusBar = NULL;
 
     // Create the window
     Create(NULL, ID_MAIN_WINDOW, wxT("MojoMerge ALPHA"));
     // Generate the menubar
     MyMenu = new Menu();
+    // Generate the status bar
+    MyStatusBar = CreateStatusBar(1, wxST_SIZEGRIP, ID_STATUSBAR);
     // Generate the toolbar
-    // TODO - Not implemented yet.  We have this commented out since creating
-    //  this empty window generates lots of Win32 API messages
-    //MyToolbar = new Toolbar();
+    MyToolbar = new Toolbar(this);
     // Create the tab browser window
     MyTabBrowser = new TabBrowser(this);
     // Add the menu bar to the frame
     SetMenuBar(MyMenu);
     // Add the toolbar to the frame
-    // TODO - Not implemented yet.  We have this commented out since creating
     //  this empty window generates lots of Win32 API messages
-    //SetToolBar(MyToolbar);
+    SetToolBar(MyToolbar);
+}
+
+void MainWindow::SetCommandStatus(uint32 Status)
+{
+    MyToolbar->SetCommandStatus(Status);
+    MyMenu->SetCommandStatus(Status);
 }
 
 TabBrowser *MainWindow::GetTabBrowser()
 {
     return MyTabBrowser;
+}
+
+wxStatusBar *MainWindow::GetStatusBar()
+{
+    return MyStatusBar;
 }
 
 void MainWindow::OnNewTwoWayFileComparison(wxCommandEvent& event)
@@ -155,6 +166,15 @@ void MainWindow::OnCloseWindow(wxCommandEvent& event)
 {
     Application::CmdCloseWindow();
 }
+void MainWindow::OnCheckMail(wxCommandEvent& event)
+{
+    wxMessageBox("Hosehead!!  Do you really think MojoMerge should check your e-mail?  Are you going to keep demanding upgrades until we finally put in support for checking e-mail?  Why must all users be so demanding.  Sheez!");
+}
+void MainWindow::OnChangeActiveWindow(wxNotebookEvent& event)
+{
+    // Enable/disable the menu/toolbar commands based on the active window
+    Application::UpdateAvailableCommandsForActiveWindow();
+}
 
 #ifdef _DEBUG
 void MainWindow::OnTestTwoWayDiff(wxCommandEvent& event)
@@ -234,6 +254,16 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_PREFERENCES_MENU, MainWindow::OnPreferences)
     EVT_MENU(ID_TOOLBAR_MENU, MainWindow::OnToolbar)
     EVT_MENU(ID_STATUSBAR_MENU, MainWindow::OnStatusbar)
+    // Toolbar menu events
+    EVT_MENU(ID_TWOWAYFILECOMPARE_TOOL, MainWindow::OnNewTwoWayFileComparison)
+    EVT_MENU(ID_THREEWAYFILECOMPARE_TOOL, MainWindow::OnNewThreeWayFileComparison)
+    EVT_MENU(ID_TWOWAYFOLDERCOMPARE_TOOL, MainWindow::OnNewTwoWayFolderComparison)
+    EVT_MENU(ID_THREEWAYFOLDERCOMPARE_TOOL, MainWindow::OnNewThreeWayFolderComparison)
+    EVT_MENU(ID_CLOSEWINDOW_TOOL, MainWindow::OnCloseWindow)
+    EVT_MENU(ID_RECOMPARE_TOOL, MainWindow::OnRecompare)
+    EVT_MENU(ID_CHECKMAIL_TOOL, MainWindow::OnCheckMail)
+    // Tab Browser menu events
+    EVT_NOTEBOOK_PAGE_CHANGED(ID_TAB_BROWSER_NOTEBOOK, MainWindow::OnChangeActiveWindow)
 #ifdef _DEBUG
     EVT_MENU(ID_TEST_TWOWAY_DIFF_MENU, MainWindow::OnTestTwoWayDiff)
     EVT_MENU(ID_TEST_THREEWAY_DIFF_MENU, MainWindow::OnTestThreeWayDiff)

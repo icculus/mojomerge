@@ -68,6 +68,7 @@ namespace MojoMerge
         virtual void Recompare();
         virtual void Initialize(wxWindow *Parent);
         virtual void OnSeparatorPainted(wxPaintEvent &event, wxDC *dc);
+        virtual uint32 RequestCommandStatus();
 
         // Event Handlers
         void OnTreeCollapsing(wxTreeEvent &event);

@@ -10,7 +10,7 @@
 
 using namespace MojoMerge;
 
-CompareFilePanel::CompareFilePanel(wxWindow *Parent)
+CompareFilePanel::CompareFilePanel(wxWindow *Parent, DiffFileNumber FileNumber)
 {
     // Set member defaults
     VerticalSizer = NULL;
@@ -19,6 +19,7 @@ CompareFilePanel::CompareFilePanel(wxWindow *Parent)
     PickFileButton = NULL;
     FileTextEdit = NULL;
     Buffer = NULL;
+    this->FileNumber = FileNumber;
 
     // Create the window where all the controls will be placed
     Create(Parent, ID_COMPARE_FILE_PANEL);
@@ -65,14 +66,19 @@ CompareFilePanel::~CompareFilePanel()
     //  up automatically upon deletion of their container.
 }
 
-void CompareFilePanel::SetFile()
+bool CompareFilePanel::SetFile()
 {
+    bool ReturnValue = false;
+
     // Prompt user for a file to open
-    Filename = wxFileSelector(wxT("Choose a file to open"));
+    Filename = wxFileSelector(wxT("Choose a file to open"), "", "", "", "*", wxOPEN | wxFILE_MUST_EXIST, Application::GetMainWindow());
 
     // Make sure the user didn't cancel
     if(!Filename.IsEmpty())
     {
+        // File has been set
+        ReturnValue = true;
+
         // Delete buffer if it was previously allocated
         if(Buffer)
             delete Buffer;
@@ -83,6 +89,8 @@ void CompareFilePanel::SetFile()
         FileTextEdit->DisplayText(Buffer);
         TextBox->SetLabel(Filename);
     }
+
+    return ReturnValue;
 }
 
 wxString CompareFilePanel::GetFile()
@@ -93,8 +101,13 @@ wxString CompareFilePanel::GetFile()
 
 void CompareFilePanel::OnPickFileButton(wxCommandEvent& event)
 {
-    // Let the user choose a file
-    SetFile();
+    // Send a command to the application to set the file for the currently
+    //  active window.  We can assume that when this button is pressed, this
+    //  panel is the active window.  This implicitly calls the "SetFile" method
+    //  of this object.  Calling this CmdSetFile method allows other parts of
+    //  the application to know that this command was executed, as opposed to
+    //  calling the SetFile method directly.
+    Application::CmdSetFile(FileNumber);
 }
 
 void CompareFilePanel::Recompare(Hunk *FirstHunk, DiffFileNumber FileNumber)

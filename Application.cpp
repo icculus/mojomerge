@@ -200,6 +200,30 @@ void Application::CmdExit()
     delete Window;
 }
 
+void Application::UpdateAvailableCommandsForActiveWindow()
+{
+    Debug("UpdateAvailableCommandForActiveWindow() called");
+    uint32 Status;
+    TabWindow *MyWindow = Browser->GetActiveWindow();
+        
+    if(MyWindow)
+        Status = MyWindow->RequestCommandStatus();
+
+    // Notify main window of new command status
+    Window->SetCommandStatus(Status);
+}
+
+void Application::CmdSetFile(DiffFileNumber FileNumber)
+{
+    GetWindowAsCompareFilesUI(Browser->GetActiveWindow())->SetFile(FileNumber);
+}
+
+void Application::CmdSetStatusBarMsg(wxString Message)
+{
+    // Set the text on the status bar appropriately
+    Window->GetStatusBar()->SetStatusText(Message);
+}
+
 char *Application::ReadFile(const char *Filename,
     bool NullTerminator, uint32 *BufferLength)
 {
@@ -301,6 +325,11 @@ CompareUI *Application::GetWindowAsCompareUI(TabWindow *Window)
     assert(NewWindow);
     
     return NewWindow;
+}
+
+MainWindow *Application::GetMainWindow()
+{
+    return Window;
 }
 
 #ifdef _DEBUG

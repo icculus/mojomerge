@@ -26,6 +26,24 @@ namespace MojoMerge
          *      A TabBrowser object, or NULL if not created
          */
         TabBrowser *GetTabBrowser();
+
+        /*  GetStatusWindow
+         *      Returns status bar associated with this window
+         *  Params
+         *      none
+         *  Returns
+         *      A wxStatusBar object, or NULL if not created
+         */
+        wxStatusBar *GetStatusBar();
+
+        /*  SetCommandStatus
+         *      This call just passed the Status mask to the toolbar and the
+         *      menu objects so they can process them accordingly.
+         *  Params
+         *      Status
+         *  Returns
+         */
+        void SetCommandStatus(uint32 Status);
     private:
         /*  Menu Event Handlers
          *      These functions handle the associated menu events.  They will
@@ -62,6 +80,8 @@ namespace MojoMerge
         void OnPreferences(wxCommandEvent& event);
         void OnToolbar(wxCommandEvent& event);
         void OnStatusbar(wxCommandEvent& event);
+        void OnCheckMail(wxCommandEvent& event);
+        void OnChangeActiveWindow(wxNotebookEvent& event);
 #ifdef _DEBUG
         void OnTestTwoWayDiff(wxCommandEvent& event);
         void OnTestThreeWayDiff(wxCommandEvent& event);
@@ -76,6 +96,7 @@ namespace MojoMerge
         Menu *MyMenu;
         Toolbar *MyToolbar;
         TabBrowser *MyTabBrowser;
+        wxStatusBar *MyStatusBar;
 
         // Use the event table defined in MainWindow.cpp
         DECLARE_EVENT_TABLE()
