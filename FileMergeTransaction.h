@@ -27,6 +27,7 @@ namespace MojoMerge
         uint32 Start;               // Starting line of change
         uint32 Length;              // Length of change
         uint32 NewLength;           // New length of change if "Replace" type
+        //LineBuffer Buffer;          // Buffer that represents the change
     };
 
     class FileMergeTransaction : public Transaction
@@ -73,7 +74,7 @@ namespace MojoMerge
          *  Returns
          *      Change that happened as a result of the transaction
          */
-        const MergeChange *GetLastChange();
+        MergeChange *GetLastChange();
 
         /***Overridden Methods***/
         /*  Undo
@@ -101,18 +102,28 @@ namespace MojoMerge
         Hunk *OriginalHunk;
         // Hunk that represents a partially resolved hunk (or NULL)
         Hunk *NewHunk;
+        // This points to either OriginalHunk or NewHunk.  It is based on what
+        //  hunk actually exists in the hunk list (whether we've done an Undo
+        //  or a Redo).  This object gets deleted when the transaction is
+        //  deleted.
+        Hunk *HunkToDelete;
         // Buffer where change will come from
         LineBuffer *SourceBuffer;
         // Buffer where change will be written to
         LineBuffer *DestBuffer;
-        // Original buffer that was in the Dest file's hunk
-        LineBuffer OriginalDestHunkBuffer;
         // Source and destination file numbers
         DiffFileNumber SourceFileNumber;
         DiffFileNumber DestFileNumber;
-        // What lines and buffers were affected in last call to Do, Undo, or
-        //  Redo methods
-        MergeChange LastChange;
+        // Offset to adjust hunks located after NewHunk.  This offset
+        //  represents how hunk lines are affected that are positioned after
+        //  the new hunk
+        sint32 Offset;
+        // What lines and buffers are affected if calling Do or Redo
+        MergeChange RedoChange;
+        // What lines and buffers are affected if calling Undo
+        MergeChange UndoChange;
+        // Buffer that is retained that represents the Undo/Redo transaction
+        LineBuffer ChangeBuffer;
     };
 }
 

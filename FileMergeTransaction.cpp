@@ -14,10 +14,12 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
     // Initialize members
     this->OriginalHunk = NULL;
     NewHunk = NULL;
-    OriginalDestHunkBuffer = NULL;
+    //OriginalDestHunkBuffer = NULL;
     this->SourceFileNumber = DiffFile_Unspecified;
     this->DestFileNumber = DiffFile_Unspecified;
-    memset(&LastChange, 0, sizeof(MergeChange));
+    memset(&RedoChange, 0, sizeof(MergeChange));
+    memset(&UndoChange, 0, sizeof(MergeChange));
+    Offset = 0;
 
     // These values can't be NULL
     assert(OriginalHunk);
@@ -37,7 +39,8 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
     this->DestBuffer = DestBuffer;
     this->SourceFileNumber = SourceFileNumber;
     this->DestFileNumber = DestFileNumber;
-    LastChange.FileNumber = DestFileNumber;
+    RedoChange.FileNumber = DestFileNumber;
+    UndoChange.FileNumber = DestFileNumber;
 
     // Do the initial transaction
     Do();
@@ -45,22 +48,99 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
 
 FileMergeTransaction::~FileMergeTransaction()
 {
-    // TODO - Delete OriginalHunk or NewHunk based on transaction status upon deletion
-    // For now, just delete the original hunk since we haven't implemented
-    //  undo support
-    delete OriginalHunk;
+    // Delete the hunk that is not currently in the hunk list for the DestFile
+    if(HunkToDelete)
+        delete HunkToDelete;
 }
 
 void FileMergeTransaction::Undo()
 {
-    // Not implemented yet
-    assert(0);
+    LineBuffer TempBuffer;
+
+    // When an Undo is performed, we replace the new hunk with the original
+    //  hunk that was there before we performed the transaction.  Also, we
+    //  apply the OPPOSITE offset so to remove the affect of the offset
+    //  that was originally during the transaction.
+    if(NewHunk)
+        NewHunk->Replace(OriginalHunk, DestFileNumber, -Offset);
+    // Else, there is no new hunk so just put the OriginalHunk back in
+    //  its original spot in the list
+    else
+        OriginalHunk->Revert(DestFileNumber, -Offset);
+
+    // Set our hunk to delete to the one that isn't in the Dest buffer
+    HunkToDelete = NewHunk;
+
+    // If Undo action is an "insert after"
+    if(UndoChange.Type == MergeChangeType_Insert)
+    {
+        // Move lines back into the destination buffer at the original location
+        ChangeBuffer.MoveLinesTo(DestBuffer, 1, ChangeBuffer.GetLineCount(),
+            UndoChange.Start - 1);
+    }
+    // Else, if Undo action is deleting lines from the buffer
+    else if(UndoChange.Type == MergeChangeType_Delete)
+    {
+        // Move lines into our ChangeBuffer that were inserted during Do/Redo
+        DestBuffer->MoveLinesTo(&ChangeBuffer, UndoChange.Start,
+            UndoChange.Start + UndoChange.Length - 1, 0);
+    }
+    // Else, if the Undo action is replacing lines with other lines
+    else if(UndoChange.Type == MergeChangeType_Replace)
+    {
+        // Exchange lines from Do/Redo transaction with original lines
+        DestBuffer->MoveLinesTo(&TempBuffer, UndoChange.Start,
+            UndoChange.Start + UndoChange.Length - 1, 0);
+        ChangeBuffer.MoveLinesTo(DestBuffer, 1, ChangeBuffer.GetLineCount(),
+            UndoChange.Start - 1);
+        TempBuffer.MoveLinesTo(&ChangeBuffer, 1, TempBuffer.GetLineCount(),
+            0);
+    }
+    // Shouldn't get here
+    else
+        assert(0);
 }
 
 void FileMergeTransaction::Redo()
 {
-    // Not implemented yet
-    assert(0);
+    LineBuffer TempBuffer;
+
+    // When a redo is performed, we replace the original hunk with the new
+    //  hunk that was created as a result of the transaction.  Also, we need
+    //  to apply the offset that was done with the original transaction.
+    OriginalHunk->Replace(NewHunk, DestFileNumber, Offset);
+
+    // Set our hunk to delete to the one that isn't in the Dest buffer
+    HunkToDelete = OriginalHunk;
+
+    // If Undo action is an "insert after"
+    if(RedoChange.Type == MergeChangeType_Insert)
+    {
+        // Move lines back into the destination buffer at the original location
+        ChangeBuffer.MoveLinesTo(DestBuffer, 1, ChangeBuffer.GetLineCount(),
+            RedoChange.Start - 1);
+    }
+    // Else, if Undo action is deleting lines from the buffer
+    else if(RedoChange.Type == MergeChangeType_Delete)
+    {
+        // Move lines into our ChangeBuffer that were inserted during Do/Redo
+        DestBuffer->MoveLinesTo(&ChangeBuffer, RedoChange.Start,
+            RedoChange.Start + RedoChange.Length - 1, 0);
+    }
+    // Else, if the Undo action is replacing lines with other lines
+    else if(RedoChange.Type == MergeChangeType_Replace)
+    {
+        // Exchange lines from Do/Redo transaction with original lines
+        DestBuffer->MoveLinesTo(&TempBuffer, RedoChange.Start,
+            RedoChange.Start + RedoChange.Length - 1, 0);
+        ChangeBuffer.MoveLinesTo(DestBuffer, 1, ChangeBuffer.GetLineCount(),
+            RedoChange.Start - 1);
+        TempBuffer.MoveLinesTo(&ChangeBuffer, 1, TempBuffer.GetLineCount(),
+            0);
+    }
+    // Shouldn't get here
+    else
+        assert(0);
 }
 
 void FileMergeTransaction::Do()
@@ -69,8 +149,6 @@ void FileMergeTransaction::Do()
     int i;
     // Data taken from Hunk object
     uint32 Start[MAX_DIFF_FILES], End[MAX_DIFF_FILES];
-    // Offset to adjust hunks located after this one
-    sint32 Offset = 0;
     // Buffers representing just the hunks from the source
     LineBuffer SrcHunkBuffer;
     // File that is different in original hunk
@@ -98,7 +176,7 @@ void FileMergeTransaction::Do()
     //  it in case we call Undo later.
     if(End[DestFileNumber] != UNSPECIFIED)
     {
-        DestBuffer->MoveLinesTo(&OriginalDestHunkBuffer, Start[DestFileNumber], 
+        DestBuffer->MoveLinesTo(&ChangeBuffer, Start[DestFileNumber], 
             End[DestFileNumber], 0);
     }
 
@@ -109,13 +187,18 @@ void FileMergeTransaction::Do()
         //  the source is an "insert after" hunk.
 
         // Retain info as to what we're changing
-        LastChange.Type = MergeChangeType_Delete;
-        LastChange.Start = Start[DestFileNumber];
-        LastChange.Length = End[DestFileNumber] - Start[DestFileNumber] + 1;
+        RedoChange.Type = MergeChangeType_Delete;
+        RedoChange.Start = Start[DestFileNumber];
+        RedoChange.Length = End[DestFileNumber] - Start[DestFileNumber] + 1;
         // Set the offset based on how many lines are removed from 
         //  the original destination buffer.  We're removing lines
         //  so offset needs to be a negative value.
-        Offset = -(sint32)LastChange.Length;
+        Offset = -(sint32)RedoChange.Length;
+
+        // Retain info on the change if we perform an undo
+        UndoChange.Type = MergeChangeType_Insert;
+        UndoChange.Start = Start[DestFileNumber];
+        UndoChange.Length = RedoChange.Length;
     }
     // Source hunk is a change hunk
     else
@@ -124,27 +207,36 @@ void FileMergeTransaction::Do()
         if(End[DestFileNumber] == UNSPECIFIED)
         {
             // Retain info as to what we're changing
-            LastChange.Type = MergeChangeType_Insert;
+            RedoChange.Type = MergeChangeType_Insert;
             // Start is always the first line of the range (not "insert after")
-            LastChange.Start = Start[DestFileNumber] + 1;
-            LastChange.Length = End[SourceFileNumber] - Start[SourceFileNumber] + 1;
+            RedoChange.Start = Start[DestFileNumber] + 1;
+            RedoChange.Length = End[SourceFileNumber] - Start[SourceFileNumber] + 1;
             // Offset is the total number of lines added from the
             //  source buffer
-            Offset = (sint32)LastChange.Length;
+            Offset = (sint32)RedoChange.Length;
+
+            // Retain info on the change if we perform an undo
+            UndoChange.Type = MergeChangeType_Delete;
+            UndoChange.Start = Start[DestFileNumber] + 1;
+            UndoChange.Length = RedoChange.Length;
+
             // Insert lines from source to the "insert after" line number of
             //  the destination
             SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
                 End[SourceFileNumber], Start[DestFileNumber]);
+            // Retain new buffer in case they undo/redo later
+            //SourceBuffer->CopyLinesTo(&RedoChange.Buffer, Start[SourceFileNumber], 
+                //End[SourceFileNumber], 0);
         }
         // Else, destination is a change hunk
         else
         {
             // Retain info as to what we're changing
-            LastChange.Type = MergeChangeType_Replace;
-            LastChange.Start = Start[DestFileNumber];
-            LastChange.Length = End[DestFileNumber] - Start[DestFileNumber]
+            RedoChange.Type = MergeChangeType_Replace;
+            RedoChange.Start = Start[DestFileNumber];
+            RedoChange.Length = End[DestFileNumber] - Start[DestFileNumber]
                 + 1;
-            LastChange.NewLength = End[SourceFileNumber] -
+            RedoChange.NewLength = End[SourceFileNumber] -
                 Start[SourceFileNumber] + 1;
             // Set the offset based on the difference between how many
             //  lines were in the original dest, and how many lines
@@ -152,12 +244,22 @@ void FileMergeTransaction::Do()
             Offset = (sint32)((End[SourceFileNumber] -
                 Start[SourceFileNumber]) - (End[DestFileNumber] -
                 Start[DestFileNumber]));
+
+            // Retain info on the change if we perform an undo
+            UndoChange.Type = MergeChangeType_Replace;
+            UndoChange.Start = Start[DestFileNumber];
+            UndoChange.Length = RedoChange.NewLength;
+            UndoChange.NewLength = RedoChange.Length;
+
             // Insert lines from source to the same line as the lines we took
             //  out of the destination.  We have to specify "start - 1" because
             //  the Start line represent a start of a range, but CopyLinesTo
             //  method expects an "insert after" line.
             SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
                 End[SourceFileNumber], Start[DestFileNumber] - 1);
+            // Retain new buffer in case they undo/redo later
+            //SourceBuffer->CopyLinesTo(&RedoChange.Buffer, Start[SourceFileNumber], 
+                //End[SourceFileNumber], 0);
         }
     }
 
@@ -213,6 +315,8 @@ void FileMergeTransaction::Do()
         }
     }
 
+    // OriginalHunk will no longer be in the list, mark that for deletion
+    HunkToDelete = OriginalHunk;
     // Replace the new hunk with the original.  Also, we provide the
     //  offset information for the dest file if the new hunk affects
     //  other hunks after it (i.e. added or removed lines).  NewHunk is
@@ -221,7 +325,18 @@ void FileMergeTransaction::Do()
     OriginalHunk->Replace(NewHunk, DestFileNumber, Offset);
 }
 
-const MergeChange *FileMergeTransaction::GetLastChange()
+MergeChange *FileMergeTransaction::GetLastChange()
 {
-    return &LastChange;
+    MergeChange *ReturnValue;
+
+    // If hunk marked for deletion is the original hunk, then our last action
+    //  performed on this transaction object was a Do() or Redo().  So, we
+    //  should return the RedoChange
+    if(HunkToDelete == OriginalHunk)
+        ReturnValue = &RedoChange;
+    // Else, last action was Undo...so return that change info
+    else
+        ReturnValue = &UndoChange;
+
+    return ReturnValue;
 }

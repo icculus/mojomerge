@@ -52,6 +52,11 @@ FileMergeTransaction *Merge::ResolveDiff(Hunk *MergeHunk,
     return NewTransaction;
 }
 
+TransactionBuffer *Merge::GetTransactionBuffer()
+{
+    return UndoBuffer;
+}
+
 LineBuffer *Merge::GetBuffer(DiffFileNumber FileNumber)
 {
     return Buffer[FileNumber];
@@ -69,6 +74,7 @@ Merge::~Merge()
     delete UndoBuffer;
     delete Buffer[DiffFile_One];
     delete Buffer[DiffFile_Two];
-    delete Buffer[DiffFile_Three];
+    if(Buffer[DiffFile_Three])
+        delete Buffer[DiffFile_Three];
     FirstHunk->DeleteList();
 }

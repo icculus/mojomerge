@@ -150,6 +150,8 @@ namespace MojoMerge
          *      none
          */
         void Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset);
+
+        void Revert(DiffFileNumber ChangedFile, sint32 Offset);
     private:
         // True if this item is a linked list head
         bool LinkHead;

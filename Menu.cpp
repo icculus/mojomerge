@@ -50,14 +50,16 @@ Menu::Menu()
     wxMenu *CompareMenu = new wxMenu();
     CompareMenu->Append(ID_RECOMPARE_MENU, wxT("Recompare\tF5"), wxT(""));
     CompareMenu->AppendSeparator();
-    CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Preferences"), wxT(""));
+    //CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Preferences"), wxT(""));
+    CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Ignore white-space"), wxT(""));
+    CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Ignore line ending diffs"), wxT(""));
     Append(CompareMenu, wxT("Compare"));
     
     // Create "View" menu
-    wxMenu *ViewMenu = new wxMenu();
-    ViewMenu->Append(ID_TOOLBAR_MENU, wxT("Toolbar"), wxT(""), TRUE);
-    ViewMenu->Append(ID_STATUSBAR_MENU, wxT("Status Bar"), wxT(""), TRUE);
-    Append(ViewMenu, wxT("View"));
+    //wxMenu *ViewMenu = new wxMenu();
+    //ViewMenu->Append(ID_TOOLBAR_MENU, wxT("Toolbar"), wxT(""), TRUE);
+    //ViewMenu->Append(ID_STATUSBAR_MENU, wxT("Status Bar"), wxT(""), TRUE);
+    //Append(ViewMenu, wxT("View"));
     
     // Create "Help" menu
     wxMenu *HelpMenu = new wxMenu();
