@@ -4,6 +4,12 @@
  *  IMPORTANT: Start and End values are always "1-based"
  *
  */
+
+#ifndef _LINEBUFFER_H_
+#define _LINEBUFFER_H_
+
+#include <stdlib.h>
+
 namespace MojoMerge
 {
     class LineBuffer
@@ -12,11 +18,12 @@ namespace MojoMerge
         /*  LineBuffer Constructor
          *  Params
          *      FileBuffer
-         *          Buffer of characters that represent lines of text.
+         *          Buffer of characters that represent lines of text.  This 
+         *          paramater may be NULL if not initial buffer is desired.
          *  Returns
          *      none
          */
-        LineBuffer(const char *Buffer);
+        LineBuffer(const char *Buffer = NULL);
 
         /*  LineBuffer Destructor
          *  Params
@@ -26,38 +33,38 @@ namespace MojoMerge
          */
         ~LineBuffer();
 
-        /*  MoveLinesFrom
-         *      Move lines from Buffer to this LineBuffer
+        /*  MoveLinesTo
+         *      Move lines from this LineBuffer to Buffer
          *  Params
          *      Buffer
-         *          Reference to a LineBuffer to move lines from
+         *          Reference to a LineBuffer to move lines to
          *      Start
-         *          Starting line in Buffer to move lines from
+         *          Starting line to move lines from
          *      End
-         *          Ending line in Buffer to move lines from
+         *          Ending line to move lines from
          *      Dest
-         *          Position in this LineBuffer to move lines to
+         *          Position in Buffer to move lines to insert after.
          *  Returns
          *      none
          */
-        void MoveLinesFrom(LineBuffer *Buffer, uint32 Start, uint32 End,
+        void MoveLinesTo(LineBuffer *Buffer, uint32 Start, uint32 End,
             uint32 Dest);
 
-        /*  CopyLinesFrom
-         *      Copy lines from Buffer to this LineBuffer
+        /*  CopyLinesTo
+         *      Copy lines from this LineBuffer to Buffer
          *  Params
          *      Buffer
-         *          Reference to a LineBuffer to copy lines from
+         *          Reference to a LineBuffer to copy lines to
          *      Start
-         *          Starting line in Buffer to copy lines from
+         *          Starting line to copy lines from
          *      End
-         *          Ending line in Buffer to copy lines from
+         *          Ending line to copy lines from
          *      Dest
-         *          Position in this LineBuffer to copy lines to
+         *          Position in Buffer to copy lines to insert after.
          *  Returns
          *      none
          */
-        void CopyLinesFrom(LineBuffer *Buffer, uint32 Start, uint32 End,
+        void CopyLinesTo(LineBuffer *Buffer, uint32 Start, uint32 End,
             uint32 Dest);
 
         /*  DeleteLines
@@ -70,22 +77,7 @@ namespace MojoMerge
          *  Returns
          *      none
          */
-        void DeleteLines(uint32 Start, uint32 End);
-
-        /*  ReplaceLines
-         *      Replace lines in the buffer with the Lines LineBuffer
-         *  Params
-         *      Start
-         *          Starting line to begin replacement
-         *      End
-         *          Ending line to end replacement
-         *      Lines
-         *          LineBuffer to insert
-         *      Count
-         *          Number of lines in the Lines array
-         */
-        void ReplaceLines(uint32 Start, uint32 End, LineBuffer *Lines,
-            uint32 Count);
+        //void DeleteLines(uint32 Start, uint32 End);
 
         /*  GetLine
         *       Returns a pointer to the line specified by LineNumber
@@ -98,5 +90,7 @@ namespace MojoMerge
         const char *GetLine(uint32 LineNumber);
     private:
         char **Lines;
-    }
+    };
 }
+
+#endif
