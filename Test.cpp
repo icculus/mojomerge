@@ -275,7 +275,7 @@ void Test::PrintHunks(FolderHunk *FirstHunk, int Indent)
         Application::Debug("%d%d%d: %s%s", CurHunk->GetExists(DiffFile_One),
             CurHunk->GetExists(DiffFile_Two),
             CurHunk->GetExists(DiffFile_Three),
-            Spaces, CurHunk->GetBarePath());
+            Spaces.c_str(), CurHunk->GetBarePath());
         // If item has children
         if(CurHunk->GetFirstChild())
             PrintHunks(CurHunk->GetFirstChild(), Indent + 4);

@@ -34,7 +34,7 @@ namespace MojoMerge
             // Add item to our hash table for keeping track of which folders
             //  this path occurs in
             // TODO - Add case insensitivity for Win32
-            Application::Debug("%s: Hash entry = %d", Path, (*Hash)[Path]);
+            Application::Debug("%s: Hash entry = %d", Path.c_str(), (*Hash)[Path]);
             // If it's a directoy, retain that info in our item data
             if(IsDir)
                 (*Hash)[Path] = (*Hash)[Path] | FileExistConstant | ISFOLDER;
@@ -110,7 +110,7 @@ FolderHunk *CompareFolders::Execute(CompareFolderOptions Options,
     size_t i;
     Application::Debug("%s", Folder1);
     for(i = 0; i < MyFiles.Count(); i++)
-        Application::Debug("%d:   %s", MyHash[MyFiles.Item(i)], MyFiles.Item(i));
+        Application::Debug("%d:   %s", MyHash[MyFiles.Item(i)], MyFiles.Item(i).c_str());
 
     // Begin creation of FolderHunk children
     int CurIndex = 0;
