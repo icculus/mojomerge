@@ -6,6 +6,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#include "wx/wx.h"
 #include "wx/config.h"
 #include "DataTypes.h"
 
@@ -109,6 +110,44 @@ namespace MojoMerge
          *      none
          */
         static void SetUndoSize(uint32 Size);
+
+        /*  GetDiffPath
+         *      Gets the path to the "diff" program
+         *  Params
+         *      none
+         *  Returns
+         *      String representing the path of "diff"
+         */
+        static wxString GetDiffPath();
+
+        /*  SetDiffPath
+         *      Sets the path to the "diff" program
+         *  Params
+         *      Value
+         *          String representing the path of "diff"
+         *  Returns
+         *      none
+         */
+        static void SetDiffPath(wxString &Value);
+
+        /*  GetDiff3Path
+         *      Gets the path to the "diff3" program
+         *  Params
+         *      none
+         *  Returns
+         *      String representing the path of "diff3"
+         */
+        static wxString GetDiff3Path();
+
+        /*  SetDiff3Path
+         *      Sets the path to the "diff3" program
+         *  Params
+         *      Value
+         *          String representing the path of "diff3"
+         *  Returns
+         *      none
+         */
+        static void SetDiff3Path(wxString &Value);
     private:
         static wxConfig *MyConfigData;
     };
