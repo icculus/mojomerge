@@ -6,6 +6,7 @@
 #define _TEST_H_
 
 #include "Hunk.h"
+#include "FolderHunk.h"
 
 namespace MojoMerge
 {
@@ -86,6 +87,7 @@ namespace MojoMerge
          */
         static void TestCompareFilesUI3Way();
     private:
+        static void PrintHunks(FolderHunk *FirstHunk, int Indent);
     };
 }
 

@@ -10,6 +10,7 @@
 #include "Stack.h"
 #include <stdio.h>
 #include "wx/dir.h"
+#include "CompareFolders.h"
 
 using namespace MojoMerge;
 
@@ -290,8 +291,43 @@ void Test::TestStack()
 
 void Test::TestCompareFolders()
 {
-    // TODO - GSR needs to fill this in
-    assert(0);
+    FolderHunk *FirstHunk;
+    GNUDiff *MyDiff = new GNUDiff("C:\\cygwin\\bin\\diff.exe", 
+        "C:\\cygwin\\bin\\diff3.exe", Application::GetTempFolder());
+
+    CompareFolders MyCompare(MyDiff);
+
+    FirstHunk = MyCompare.Execute(CompareFolderOption_None, DiffOption_None,
+        "D:\\Documents\\readgs\\develop\\mojomerge\\Dir Diff Test\\NPPCC (ancestor)",
+        "D:\\Documents\\readgs\\develop\\mojomerge\\Dir Diff Test\\NPPCC b",
+        "D:\\Documents\\readgs\\develop\\mojomerge\\Dir Diff Test\\NPPCC c");
+
+    PrintHunks(FirstHunk, 0);
+    // Delete the list now that we're done with it
+    FirstHunk->DeleteList();
+}
+
+void Test::PrintHunks(FolderHunk *FirstHunk, int Indent)
+{
+    FolderHunk *CurHunk;
+    wxString Spaces;
+
+    // Insert indent to beginning
+    Spaces.Pad(Indent, ' ', false);
+
+    // Get first hunk
+    CurHunk = FirstHunk;
+    while(CurHunk)
+    {
+        Application::Debug("%d%d%d: %s%s", CurHunk->GetExists(DiffFile_One),
+            CurHunk->GetExists(DiffFile_Two),
+            CurHunk->GetExists(DiffFile_Three),
+            Spaces, CurHunk->GetBarePath());
+        // If item has children
+        if(CurHunk->GetFirstChild())
+            PrintHunks(CurHunk->GetFirstChild(), Indent + 4);
+        CurHunk = CurHunk->GetNext();
+    }
 }
 
 void Test::TestCompareFilesUI()
