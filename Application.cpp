@@ -42,6 +42,9 @@ bool Application::OnInit()
     Browser = Window->GetTabBrowser();
     // Browser object can't be NULL
     assert(Browser);
+    // Since there are no active windows, all TabWindow related commands are
+    //  disabled from the menu and toolbar.
+    UpdateAvailableCommandsForActiveWindow();
     // Show the window
     Window->Show(true);
     SetTopWindow(Window);
@@ -91,6 +94,13 @@ void Application::CmdCloseWindow()
 {
     // Create a new comparison window
     Browser->RemoveActiveWindow();
+
+    if(Browser->GetActiveWindow() == NULL)
+    {
+        // Since there are no active windows, all TabWindow related commands 
+        //  are disabled from the menu and toolbar.
+        UpdateAvailableCommandsForActiveWindow();
+    }
 }
 
 void Application::CmdSaveFirstFile()
@@ -207,14 +217,23 @@ void Application::CmdExit()
 void Application::UpdateAvailableCommandsForActiveWindow()
 {
     Debug("UpdateAvailableCommandForActiveWindow() called");
-    uint32 Status;
+    uint32 Status = 0;
     TabWindow *MyWindow = Browser->GetActiveWindow();
         
+    // Get the status from the active window if it exists, otherwise
+    //  Status remains as 0 and all commands are disabled
     if(MyWindow)
         Status = MyWindow->RequestCommandStatus();
 
     // Notify main window of new command status
     Window->SetCommandStatus(Status);
+}
+
+
+void Application::UpdateNameForActiveWindow()
+{
+    // Call the tab browser's method to update the name
+    Browser->UpdateNameForActiveWindow();
 }
 
 void Application::CmdSetFile(DiffFileNumber FileNumber)
