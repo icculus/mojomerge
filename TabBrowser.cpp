@@ -30,7 +30,7 @@ TabBrowser::TabBrowser(wxWindow *Container)
     assert(BoxSizer);
     assert(NotebookSizer);
     // Add the notebook sizer to the sizer object
-    BoxSizer->Add(NotebookSizer, 1, wxGROW | wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    BoxSizer->Add(NotebookSizer, 1, wxGROW | wxALIGN_CENTER_VERTICAL | wxALL, 0);
     // Initialize sizer stuff so that the browser will take up
     //  the entire panel.
     this->SetAutoLayout(true);
@@ -45,7 +45,8 @@ TabBrowser::TabBrowser(wxWindow *Container)
 
 void TabBrowser::AddWindow(TabWindow *Window)
 {
-    Notebook->AddPage(Window, "New Comparison Window", true);
+    Window->Initialize(this);
+    Notebook->AddPage(Window, Window->GetName(), true);
 }
 
 void TabBrowser::RemoveActiveWindow()
@@ -54,5 +55,15 @@ void TabBrowser::RemoveActiveWindow()
 
 TabWindow *TabBrowser::GetActiveWindow()
 {
-    return NULL;
+    TabWindow *CurrentPage;
+    int Page;
+
+    Page = Notebook->GetSelection();
+    // There must be a valid page selected
+    assert(Page != -1);
+
+    // Return the window to the caller
+    CurrentPage = (TabWindow *)Notebook->GetPage(Page);
+    assert(CurrentPage);
+    return CurrentPage;
 }
