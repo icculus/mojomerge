@@ -285,7 +285,8 @@ Hunk *GNUDiff::ParseDiff3()
     const char *pBuffer = NULL;
     bool bHunkStart;
     uint32 *pStart = NULL, *pEnd = NULL;
-    uint32 Start1, End1, Start2, End2, Start3, End3, DiffFile;
+    uint32 Start1, End1, Start2, End2, Start3, End3;
+    DiffFileNumber DiffFile;
     Hunk *FirstHunk = NULL;     // First hunk created in list
     Hunk *LastHunk = NULL;      // Last hunk created in list
 
@@ -294,7 +295,8 @@ Hunk *GNUDiff::ParseDiff3()
     // Get first character of the input buffer.
     cTemp = *pBuffer;
     // Preset all values to -1
-    Start1 = End1 = Start2 = End2 = Start3 = End3 = DiffFile = UNSPECIFIED;
+    Start1 = End1 = Start2 = End2 = Start3 = End3 = UNSPECIFIED;
+    DiffFile = DiffFile_Unspecified;
     // Preset for no error
     iError = 0;
     // Preset for Start of Hunk NOT found yet
@@ -381,7 +383,8 @@ Hunk *GNUDiff::ParseDiff3()
                         // The file number would be here if there is one.
                         if(((cTemp = *pBuffer++) == '1') || (cTemp == '2') ||
                         (cTemp == '3'))
-                            DiffFile = int(cTemp & 0x0f);
+                            // DiffFile is 0 based
+                            DiffFile = (DiffFileNumber)(int(cTemp & 0x0f) - 1);
                     }
                     else
                         iError = -1;
@@ -400,14 +403,14 @@ Hunk *GNUDiff::ParseDiff3()
         {
             // Create new hunk object that represents the diff
             LastHunk = new Hunk(LastHunk, Start1, End1, Start2, End2, Start3,
-                End3);
+                End3, DiffFile);
             // If FirstHunk is NULL, this is our first hunk.  Retain it as
             //  the first one in the list.
             if(FirstHunk == NULL)
                 FirstHunk = LastHunk;
             // Preset all values to UNSPECIFIED
-            Start1 = End1 = Start2 = End2 = Start3 = End3 = DiffFile = 
-                UNSPECIFIED;
+            Start1 = End1 = Start2 = End2 = Start3 = End3 =UNSPECIFIED;
+            DiffFile = DiffFile_Unspecified;
             // Preset for no error
             iError = 0;
             // Preset for Start of Hunk NOT found yet
