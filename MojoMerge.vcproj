@@ -151,6 +151,12 @@
 				RelativePath=".\FolderHunk.cpp">
 			</File>
 			<File
+				RelativePath=".\FolderMerge.cpp">
+			</File>
+			<File
+				RelativePath=".\FolderMergeTransaction.cpp">
+			</File>
+			<File
 				RelativePath="GNUDiff.cpp">
 			</File>
 			<File
@@ -197,10 +203,16 @@
 				RelativePath="CompareFilesUI.h">
 			</File>
 			<File
+				RelativePath=".\CompareFolderPanel.cpp">
+			</File>
+			<File
+				RelativePath=".\CompareFolderPanel.h">
+			</File>
+			<File
 				RelativePath=".\CompareFolders.h">
 			</File>
 			<File
-				RelativePath="CompareFoldersUI.h">
+				RelativePath=".\CompareFoldersUI.h">
 			</File>
 			<File
 				RelativePath=".\CompareUI.h">
@@ -225,6 +237,12 @@
 			</File>
 			<File
 				RelativePath=".\FolderHunk.h">
+			</File>
+			<File
+				RelativePath=".\FolderMerge.h">
+			</File>
+			<File
+				RelativePath=".\FolderMergeTransaction.h">
 			</File>
 			<File
 				RelativePath="GNUDiff.h">
