@@ -18,7 +18,6 @@ CompareFilePanel::CompareFilePanel(wxWindow *Parent, DiffFileNumber FileNumber)
     TextBox = NULL;
     PickFileButton = NULL;
     FileTextEdit = NULL;
-    Buffer = NULL;
     this->FileNumber = FileNumber;
 
     // Create the window where all the controls will be placed
@@ -58,35 +57,31 @@ CompareFilePanel::CompareFilePanel(wxWindow *Parent, DiffFileNumber FileNumber)
 
 CompareFilePanel::~CompareFilePanel()
 {
-    // Deletes the original file buffer if set
-    if(Buffer)
-        delete Buffer;
-
     // All other members are wxWindow based objects and are therefore cleaned
     //  up automatically upon deletion of their container.
 }
 
 bool CompareFilePanel::SetFile()
 {
+    char *Buffer = NULL;        // Buffer read from file
     bool ReturnValue = false;
 
     // Prompt user for a file to open
-    Filename = wxFileSelector(wxT("Choose a file to open"), "", "", "", "*", wxOPEN | wxFILE_MUST_EXIST, Application::GetMainWindow());
+    wxString NewFilename = wxFileSelector(wxT("Choose a file to open"), "", "", "", "*", wxOPEN | wxFILE_MUST_EXIST, Application::GetMainWindow());
 
     // Make sure the user didn't cancel
-    if(!Filename.IsEmpty())
+    if(!NewFilename.IsEmpty())
     {
+        // Save as our new filename
+        Filename = NewFilename;
         // File has been set
         ReturnValue = true;
-
-        // Delete buffer if it was previously allocated
-        if(Buffer)
-            delete Buffer;
 
         // Read the entire file and store it
         Buffer = Application::ReadFile(Filename, true);
         // Fill the textbox with the file buffer
         FileTextEdit->DisplayText(Buffer);
+        delete Buffer;
         TextBox->SetLabel(Filename);
     }
 
@@ -116,8 +111,8 @@ void CompareFilePanel::Recompare(Hunk *FirstHunk, DiffFileNumber FileNumber)
     uint32 Start, End;          // Start and end lines for hunks
 
     // Make sure buffer is valid
-    if(Buffer)
-    {
+    //if(Buffer)
+    //{
         // Clear all styling
         FileTextEdit->MarkClearAll();
 
@@ -143,10 +138,10 @@ void CompareFilePanel::Recompare(Hunk *FirstHunk, DiffFileNumber FileNumber)
 
         // Set readonly back to true so user can't edit it
         //FileTextEdit->SetReadOnly(true);
-    }
+    //}
     // Else, report the error
-    else
-        wxMessageBox(wxT("File could not be open!"), wxT("Error"), wxOK | wxICON_ERROR);
+    //else
+        //wxMessageBox(wxT("File could not be open!"), wxT("Error"), wxOK | wxICON_ERROR);
 }
 
 int CompareFilePanel::GetTextCtrlOffset()
@@ -163,14 +158,30 @@ int CompareFilePanel::GetTextCtrlOffset()
     return TextCtrlOffset;
 }
 
-const char *CompareFilePanel::GetBuffer()
+wxString CompareFilePanel::GetBuffer()
 {
-    return Buffer;
+    return FileTextEdit->GetText();
 }
 
 DiffTextEdit *CompareFilePanel::GetDiffTextEdit()
 {
     return FileTextEdit;
+}
+
+void CompareFilePanel::UpdateSavedIndicatorStatus(bool IsSaved)
+{
+    if(IsSaved)
+        TextBox->SetLabel("* " + Filename);
+    else
+        TextBox->SetLabel(Filename);
+}
+
+void CompareFilePanel::ChangeFilename(wxString Filename)
+{
+    // Change internal filename without loading a new file
+    this->Filename = Filename;
+    // Change the filename that is displayed
+    TextBox->SetLabel(Filename);
 }
 
 // Event mappings for the file panel
