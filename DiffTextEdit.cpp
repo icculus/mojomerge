@@ -68,7 +68,8 @@ void DiffTextEdit::MarkClearAll()
     // Style the whole file
     SetStyling(Pos, 0);
     // We're styling to EOF, call the bug fix function
-    EOFStyleBugHack();
+    //EOFStyleBugHack();
+    BlankLineStyleBugHack();
 }
 
 void DiffTextEdit::EOFStyleBugHack()
