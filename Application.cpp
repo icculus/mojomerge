@@ -250,43 +250,15 @@ CompareUI *Application::GetWindowAsCompareUI(TabWindow *Window)
 void Application::Debug(char *format, ...)
 {
     va_list args;
-    int len;
-    char *buffer;
 
     va_start(args, format);
-    // Get total number of characters plus null terminator and newline
-    len = _vscprintf(format, args) + 2;
-    buffer = new char[len];
-    vsprintf(buffer, format, args);
-    // Append newline to end of buffer
-    strcat(buffer, "\n");
-    // Output the debug message
-    printf(buffer);
-#ifdef _WINDOWS
-    // Under windows, we have to flush stdout so that messages will display
-    //  as they are written.
-    fflush(stdout);
-#endif
-    delete buffer;
+    wxVLogTrace(format, args);
 }
 void Application::DebugNoCR(char *format, ...)
 {
     va_list args;
-    int len;
-    char *buffer;
 
     va_start(args, format);
-    // Get total number of characters plus null terminator and newline
-    len = _vscprintf(format, args) + 2;
-    buffer = new char[len];
-    vsprintf(buffer, format, args);
-    // Output the debug message
-    printf(buffer);
-#ifdef _WINDOWS
-    // Under windows, we have to flush stdout so that messages will display
-    //  as they are written.
-    fflush(stdout);
-#endif
-    delete buffer;
+    wxVLogTrace(format, args);
 }
 #endif
