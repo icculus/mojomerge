@@ -11,9 +11,13 @@
 #include "GNUDiff.h"
 #include "Merge.h"
 #include "CompareFilePanel.h"
+#include "SeparatorPanel.h"
 
 namespace MojoMerge
 {
+    // Maximum number of merge buttons per separator panel
+    #define MAX_MERGE_BUTTONS   100
+
     class CompareFilesUI : public CompareUI
     {
         DECLARE_EVENT_TABLE()
@@ -91,6 +95,26 @@ namespace MojoMerge
          */
         virtual void Initialize(wxWindow *Parent);
     private:
+        /*  DrawMergeButton
+         *      Draw the button that initiates a merge for the hunk on the
+         *      specified file numbers
+         *  Params
+         *      Y
+         *          Coordinate of button center
+         *      TheHunk
+         *          The hunk to merge if button is pressed
+         *      SourceNum
+         *          Source that button merges from
+         *      DestNum
+         *          Destination that button merges to
+         *      SeparatorIndex
+         *          Which panel separator does the button go on
+         *  Returns
+         *      none
+         */
+        void DrawMergeButton(int Y, Hunk *TheHunk, DiffFileNumber SourceNum,
+            DiffFileNumber DestNum, int SeparatorIndex);
+
         /*  GetCenterLine
          *      Returns the linenumber (0-based) of the closest line to the
          *      center of the panel.
@@ -118,22 +142,32 @@ namespace MojoMerge
          *      in each window together.  These lines are taken from the
          *      FirstHunk linked list.
          *  Params
-         *      none
+         *      dc
+         *          Device context to draw lines on
+         *      PanelIndex
+         *          Index of separator panel array we're drawing on
          *  Returns
          *      none
          */
-        void DrawDiffConnectLines();
+        void DrawDiffConnectLines(wxDC *dc, int PanelIndex);
 
         /*  DrawSingleDiffLine
          *      Draws line between source and destination file to connect the
          *      specified hunk.
          *  Params
-         *      none
+         *      SourceNum
+         *          Source file to draw line from
+         *      DestNum
+         *          Dest file to draw line to
+         *      HunkToDraw
+         *          Coordinates of line are taken from this hunk
+         *      Context
+         *          Device context to draw lines on
          *  Returns
          *      none
          */
         void DrawSingleDiffLine(DiffFileNumber SourceNum,
-            DiffFileNumber DestNum, Hunk *HunkToDraw);
+            DiffFileNumber DestNum, Hunk *HunkToDraw, wxDC *Context);
 
         /*  CalculateY
          *      Calculates the Y coordinate for where the diff line draws to
@@ -156,6 +190,17 @@ namespace MojoMerge
          *      none
          */
         void AutoAdjustScrolling(DiffFileNumber FileNumber);
+
+        /*  DetermineAutoScrolling
+         *      Determines if auto scrolling is necessary for the specified
+         *      file number.  If so, it calls AutoAdjustScrolling accordingly.
+         *  Params
+         *      FileNumber
+         *          File that was manually scrolled
+         *  Returns
+         *      none
+         */
+        void DetermineAutoScrolling(DiffFileNumber FileNumber);
 
         /*  GetHunkAtLine
          *      Returns the hunk located at the specified line in the specified
@@ -206,23 +251,34 @@ namespace MojoMerge
          */
         uint32 Convert1To0(uint32 Line);
 
+        /*  ShowTransaction
+         *      Show the results of a FileMergeTransaction object visually.
+         *  Params
+         *      NewTransaction
+         *          Transaction to render on screen
+         *  Returns
+         *      none
+         */
+        void ShowTransaction(FileMergeTransaction *NewTransaction);
+
         // Event handlers
         void OnFileTextPainted(wxStyledTextEvent& event);
         void OnFileTextPosChanged(wxStyledTextEvent& event);
-        void OnPanelResize(wxSizeEvent& event);
+        void OnPanel1Paint(wxPaintEvent& event);
+        void OnPanel2Paint(wxPaintEvent& event);
+        void OnMergeButtonClick(wxCommandEvent& event);
+        virtual void OnSeparatorPainted(wxPaintEvent &event);
         //void OnSeparatorPainted(wxPaintEvent& event);
         
         // Diff object to use for file comparisons
         Diff *MyDiff;
-        // First hunk returned from a diff
-        Hunk *FirstHunk;
         // Merge object to use for merging differences
         Merge *MyMerge;
         // File path for each file in diff
         wxString FilePath[MAX_DIFF_FILES];
 
         wxBoxSizer *HorizontalSizer;
-        wxPanel *SeparatorPanels[MAX_DIFF_FILES - 1];
+        SeparatorPanel *SeparatorPanels[MAX_DIFF_FILES - 1];
         CompareFilePanel *FilePanels[MAX_DIFF_FILES];
         int LastDiffFile;
         int TextCtrlOffset;
@@ -233,6 +289,10 @@ namespace MojoMerge
         int LastScrollPosition[MAX_DIFF_FILES];
         // Flag to ignore scroll change during paint event
         bool IgnoreScrollChange[MAX_DIFF_FILES];
+        // Array of buttons used for merging
+        wxButton *MergeButtons[MAX_DIFF_FILES - 1][MAX_MERGE_BUTTONS];
+        // Next free merge button index
+        uint32 NextFreeMergeButton[MAX_DIFF_FILES - 1];
     };
 }
 
