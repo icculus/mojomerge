@@ -274,6 +274,18 @@ namespace MojoMerge
          */
         void CheckReadyToRecompare();
 
+        /*  TrimFilename
+         *      Trim the filename so that only the last TRIMFILENAME_MAX number
+         *      of characters appears.  If the filename is longer, it is
+         *      preceeded by a "...".
+         *  Params
+         *      Filename
+         *          Original filename
+         *  Returns
+         *      A new trimmed string
+         */
+        wxString TrimFilename(wxString Filename);
+
         // Event handlers
         void OnFileTextPainted(wxStyledTextEvent& event);
         void OnFileTextPosChanged(wxStyledTextEvent& event);
@@ -294,7 +306,10 @@ namespace MojoMerge
         int LastDiffFile;
         int TextCtrlOffset;
         bool ThreeWayNotTwoWay;
+        // Flags indicating if we're ready to perform specific commands
         bool ReadyToCompare;
+        bool ReadyToSave[MAX_DIFF_FILES];
+        bool ReadyToSaveAs[MAX_DIFF_FILES];
         // Which file was scrolled last
         DiffFileNumber LastScrolledWindow;
         // Scroll position of each file after the last painted event
