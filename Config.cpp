@@ -6,7 +6,9 @@
 
 using namespace MojoMerge;
 
-#define UNDO_SIZE_DEFAULT   16
+#define UNDO_SIZE_DEFAULT       16
+#define DIFF_FOLDER_DEFAULT     "diff"
+#define DIFF3_FOLDER_DEFAULT    "diff3"
 
 // Initialize static members
 wxConfig *Config::MyConfigData = NULL;
@@ -107,6 +109,46 @@ void Config::SetUndoSize(uint32 Size)
     assert(MyConfigData);
     // TODO - Should we check for Size being to big?
     bool i = MyConfigData->Write(wxT("UndoSize"), (long)Size);
+    // Fails if write was not successful
+    assert(i);
+}
+
+wxString Config::GetDiffPath()
+{
+    wxString Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("DiffPath"), &Value, DIFF_FOLDER_DEFAULT);
+
+    return Value;
+}
+
+void Config::SetDiffPath(wxString &Value)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    bool i = MyConfigData->Write(wxT("DiffPath"), Value);
+    // Fails if write was not successful
+    assert(i);
+}
+
+wxString Config::GetDiff3Path()
+{
+    wxString Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("Diff3Path"), &Value, DIFF3_FOLDER_DEFAULT);
+
+    return Value;
+}
+
+void Config::SetDiff3Path(wxString &Value)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    bool i = MyConfigData->Write(wxT("Diff3Path"), Value);
     // Fails if write was not successful
     assert(i);
 }
