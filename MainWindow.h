@@ -38,7 +38,10 @@ namespace MojoMerge
          *  Returns
          *      none
          */
-        void OnNewComparison(wxCommandEvent& event);
+        void OnNewTwoWayFileComparison(wxCommandEvent& event);
+        void OnNewThreeWayFileComparison(wxCommandEvent& event);
+        void OnNewTwoWayFolderComparison(wxCommandEvent& event);
+        void OnNewThreeWayFolderComparison(wxCommandEvent& event);
         void OnSaveFirstFile(wxCommandEvent& event);
         void OnSaveSecondFile(wxCommandEvent& event);
         void OnSaveThirdFile(wxCommandEvent& event);

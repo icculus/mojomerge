@@ -11,7 +11,10 @@ Menu::Menu()
 {
     // Create "File" menu
     wxMenu *FileMenu = new wxMenu();
-    FileMenu->Append(ID_FILECOMPARE_MENU, wxT("New Comparison\tCtrl-N"), wxT(""));
+    FileMenu->Append(ID_TWOWAYFILECOMPARE_MENU, wxT("New two-way File Comparison"), wxT(""));
+    FileMenu->Append(ID_THREEWAYFILECOMPARE_MENU, wxT("New three-way File Comparison"), wxT(""));
+    FileMenu->Append(ID_TWOWAYFOLDERCOMPARE_MENU, wxT("New two-way Folder Comparison"), wxT(""));
+    FileMenu->Append(ID_THREEWAYFOLDERCOMPARE_MENU, wxT("New three-way Folder Comparison"), wxT(""));
     FileMenu->AppendSeparator();
     wxMenu *SaveSubMenu = new wxMenu();
     SaveSubMenu->Append(ID_SAVE_FILE1_MENU, wxT("Save First File\tCtrl-1"), wxT(""));
@@ -73,8 +76,6 @@ Menu::Menu()
     DebugMenu->Append(ID_TEST_TWOWAY_MERGE_MENU, wxT("Test two-way merge"), wxT(""));
     DebugMenu->Append(ID_TEST_STACK_MENU, wxT("Test Stack"), wxT(""));
     DebugMenu->Append(ID_TEST_COMPAREFOLDERS_MENU, wxT("Test CompareFolders"), wxT(""));
-    DebugMenu->Append(ID_TEST_COMPAREFILESUI_MENU, wxT("Test CompareFilesUI"), wxT(""));
-    DebugMenu->Append(ID_TEST_COMPAREFILESUI3WAY_MENU, wxT("Test CompareFilesUI 3-way"), wxT(""));
     Append(DebugMenu, wxT("Debug"));
 #endif
 }
