@@ -89,6 +89,17 @@ namespace MojoMerge
          */
         static void UpdateAvailableCommandsForActiveWindow();
 
+        /*  UpdateNameForActiveWindow
+         *      Requests an update from the active window for the name.  This
+         *      is commonly called by the active window itself to let the
+         *      application know that something has changed.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void UpdateNameForActiveWindow();
+
         /*  ReadFile
          *      Standard function that reads a file and stores the bytes in a
          *      chararacter buffer
