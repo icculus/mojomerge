@@ -70,4 +70,5 @@ Merge::~Merge()
     delete Buffer[DiffFile_One];
     delete Buffer[DiffFile_Two];
     delete Buffer[DiffFile_Three];
+    FirstHunk->DeleteList();
 }
