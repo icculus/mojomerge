@@ -10,7 +10,7 @@
 #ifndef _TABWINDOW_H
 #define _TABWINDOW_H
 
-#include "Datatypes.h"
+#include "DataTypes.h"
 #include "wx/wx.h"
 
 namespace MojoMerge

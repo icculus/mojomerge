@@ -5,7 +5,7 @@
 #ifndef _TOOLBAR_H_
 #define _TOOLBAR_H_
 
-#include "Datatypes.h"
+#include "DataTypes.h"
 #include "wx/wx.h"
 
 namespace MojoMerge

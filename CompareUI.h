@@ -6,7 +6,7 @@
 #define _COMPAREUI_H_
 
 #include "TabWindow.h"
-#include "Datatypes.h"
+#include "DataTypes.h"
 
 namespace MojoMerge
 {

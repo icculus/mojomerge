@@ -5,7 +5,7 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
-#include "Datatypes.h"
+#include "DataTypes.h"
 #include "wx/wx.h"
 
 namespace MojoMerge
