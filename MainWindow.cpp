@@ -176,10 +176,6 @@ void MainWindow::OnCloseWindow(wxCommandEvent& event)
 {
     Application::CmdCloseWindow();
 }
-void MainWindow::OnCheckMail(wxCommandEvent& event)
-{
-    wxMessageBox("Hosehead!!  Do you really think MojoMerge should check your e-mail?  Are you going to keep demanding upgrades until we finally put in support for checking e-mail?  Why must all users be so demanding.  Sheez!");
-}
 void MainWindow::OnChangeActiveWindow(wxNotebookEvent& event)
 {
     // Enable/disable the menu/toolbar commands based on the active window
@@ -274,7 +270,6 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_THREEWAYFOLDERCOMPARE_TOOL, MainWindow::OnNewThreeWayFolderComparison)
     EVT_MENU(ID_CLOSEWINDOW_TOOL, MainWindow::OnCloseWindow)
     EVT_MENU(ID_RECOMPARE_TOOL, MainWindow::OnRecompare)
-    EVT_MENU(ID_CHECKMAIL_TOOL, MainWindow::OnCheckMail)
     // Tab Browser menu events
     EVT_NOTEBOOK_PAGE_CHANGED(ID_TAB_BROWSER_NOTEBOOK, MainWindow::OnChangeActiveWindow)
 #ifdef _DEBUG

@@ -22,8 +22,6 @@ Toolbar::Toolbar(wxWindow *Parent) : wxToolBar(Parent, ID_TOOLBAR)
     AddSeparator();
     AddTool(ID_RECOMPARE_TOOL, wxT(""), GetBitmap(6), wxT("Perform a recompare for the active window"));
     AddTool(ID_CLOSEWINDOW_TOOL, GetBitmap(4), wxT("Close the current active window"));
-    AddSeparator();
-    AddTool(ID_CHECKMAIL_TOOL, wxT(""), GetBitmap(5), wxT("Check your mail"));
     Realize();
 }
 

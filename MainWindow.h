@@ -83,7 +83,6 @@ namespace MojoMerge
         void OnIgnoreCase(wxCommandEvent& event);
         void OnToolbar(wxCommandEvent& event);
         void OnStatusbar(wxCommandEvent& event);
-        void OnCheckMail(wxCommandEvent& event);
         void OnChangeActiveWindow(wxNotebookEvent& event);
 #ifdef _DEBUG
         void OnTestTwoWayDiff(wxCommandEvent& event);
