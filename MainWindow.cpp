@@ -132,26 +132,6 @@ void MainWindow::OnSelectAll(wxCommandEvent& event)
     Application::CmdSelectAll();
 }
 
-void MainWindow::OnCompareFiles(wxCommandEvent& event)
-{
-    Application::CmdCompareFiles();
-}
-
-void MainWindow::OnCompareFolders(wxCommandEvent& event)
-{
-    Application::CmdCompareFolders();
-}
-
-void MainWindow::OnTwoWayComparison(wxCommandEvent& event)
-{
-    Application::CmdTwoWayComparison();
-}
-
-void MainWindow::OnThreeWayComparison(wxCommandEvent& event)
-{
-    Application::CmdThreeWayComparison();
-}
-
 void MainWindow::OnRecompare(wxCommandEvent& event)
 {
     Application::CmdRecompare();
@@ -170,6 +150,10 @@ void MainWindow::OnToolbar(wxCommandEvent& event)
 void MainWindow::OnStatusbar(wxCommandEvent& event) 
 {
     Application::CmdStatusbar();
+}
+void MainWindow::OnCloseWindow(wxCommandEvent& event)
+{
+    Application::CmdCloseWindow();
 }
 
 #ifdef _DEBUG
@@ -230,6 +214,7 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_THREEWAYFILECOMPARE_MENU, MainWindow::OnNewThreeWayFileComparison)
     EVT_MENU(ID_TWOWAYFOLDERCOMPARE_MENU, MainWindow::OnNewTwoWayFolderComparison)
     EVT_MENU(ID_THREEWAYFOLDERCOMPARE_MENU, MainWindow::OnNewThreeWayFolderComparison)
+    EVT_MENU(ID_CLOSEWINDOW_MENU, MainWindow::OnCloseWindow)
     EVT_MENU(ID_SAVE_FILE1_MENU, MainWindow::OnSaveFirstFile)
     EVT_MENU(ID_SAVE_FILE2_MENU, MainWindow::OnSaveSecondFile)
     EVT_MENU(ID_SAVE_FILE3_MENU, MainWindow::OnSaveThirdFile)
@@ -245,10 +230,6 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_COPY_MENU, MainWindow::OnCopy)
     EVT_MENU(ID_PASTE_MENU, MainWindow::OnPaste)
     EVT_MENU(ID_SELECTALL_MENU, MainWindow::OnSelectAll)
-    EVT_MENU(ID_CMPFILES_OPT_MENU, MainWindow::OnCompareFiles)
-    EVT_MENU(ID_CMPFOLDERS_MENU, MainWindow::OnCompareFolders)
-    EVT_MENU(ID_TWOWAY_MENU, MainWindow::OnTwoWayComparison)
-    EVT_MENU(ID_THREEWAY_MENU, MainWindow::OnThreeWayComparison)
     EVT_MENU(ID_RECOMPARE_MENU, MainWindow::OnRecompare)
     EVT_MENU(ID_PREFERENCES_MENU, MainWindow::OnPreferences)
     EVT_MENU(ID_TOOLBAR_MENU, MainWindow::OnToolbar)

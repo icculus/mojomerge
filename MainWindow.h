@@ -42,6 +42,7 @@ namespace MojoMerge
         void OnNewThreeWayFileComparison(wxCommandEvent& event);
         void OnNewTwoWayFolderComparison(wxCommandEvent& event);
         void OnNewThreeWayFolderComparison(wxCommandEvent& event);
+        void OnCloseWindow(wxCommandEvent& event);
         void OnSaveFirstFile(wxCommandEvent& event);
         void OnSaveSecondFile(wxCommandEvent& event);
         void OnSaveThirdFile(wxCommandEvent& event);
@@ -57,10 +58,6 @@ namespace MojoMerge
         void OnCopy(wxCommandEvent& event); 
         void OnPaste(wxCommandEvent& event); 
         void OnSelectAll(wxCommandEvent& event);
-        void OnCompareFiles(wxCommandEvent& event);
-        void OnCompareFolders(wxCommandEvent& event);
-        void OnTwoWayComparison(wxCommandEvent& event);
-        void OnThreeWayComparison(wxCommandEvent& event);
         void OnRecompare(wxCommandEvent& event);
         void OnPreferences(wxCommandEvent& event);
         void OnToolbar(wxCommandEvent& event);

@@ -48,15 +48,12 @@ namespace MojoMerge
         static void CmdCopy();
         static void CmdPaste();
         static void CmdSelectAll();
-        static void CmdCompareFiles();
-        static void CmdCompareFolders();
-        static void CmdTwoWayComparison();
-        static void CmdThreeWayComparison();
         static void CmdRecompare();
         static void CmdPreferences();
         static void CmdToolbar();
         static void CmdStatusbar();
         static void CmdExit();
+        static void CmdCloseWindow();
 
         /*  ReadFile
          *      Standard function that reads a file and stores the bytes in a
