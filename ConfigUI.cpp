@@ -2,7 +2,6 @@
  *
  */
 
-#include "Toolbar.h"
 #include "Identifiers.h"
 #include "ConfigUI.h"
 #include "wx/treectrl.h"
@@ -12,7 +11,7 @@ using namespace MojoMerge;
 ConfigUI::ConfigUI(Config *MyConfig) : wxDialog(NULL, -1, (wxString)wxT("Preferences"),
     wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-    //!!!TODO - This is just temporary to show the basic layout of the
+    // TODO - This is just temporary to show the basic layout of the
     // preferences window.
     wxBoxSizer *item0 = new wxBoxSizer( wxVERTICAL );
 
