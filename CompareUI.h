@@ -33,8 +33,19 @@ namespace MojoMerge
         virtual void ThreeWayComparison() = 0;
         virtual void Recompare() = 0;
         
+        /*  Initialize
+         *      Initializes the CompareUI window with the parent.  Creating the
+         *      window and setting any display options should be done here
+         *  Params
+         *      Parent
+         *          Parent window this should be added to
+         *  Returns
+         *      none
+         */
+        virtual void Initialize(wxWindow *Parent) = 0;
+
         // Event handler that gets called by the SeparatorPanel class
-        virtual void OnSeparatorPainted(wxPaintEvent &event) = 0;
+        virtual void OnSeparatorPainted(wxPaintEvent &event, wxDC *dc) = 0;
     };
 }
 
