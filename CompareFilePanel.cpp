@@ -15,18 +15,10 @@ CompareFilePanel::CompareFilePanel(wxWindow *Parent)
     // Set member defaults
     VerticalSizer = NULL;
     TopHorizontalSizer = NULL;
-    FileComboBox = NULL;
+    TextBox = NULL;
     PickFileButton = NULL;
     FileTextEdit = NULL;
     Buffer = NULL;
-
-    // TODO - Need to get color from config
-    // Color for highlighting changes
-
-    wxString dummyarray[] = 
-    {
-        wxT("file name test")
-    };
 
     // Create the window where all the controls will be placed
     Create(Parent, ID_COMPARE_FILE_PANEL);
@@ -36,14 +28,15 @@ CompareFilePanel::CompareFilePanel(wxWindow *Parent)
     TopHorizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // Create the file selection combo box
-    wxComboBox *FileComboBox = new wxComboBox(this, ID_FILE_COMBO_BOX, wxT(""),
-        wxDefaultPosition, wxSize(100,-1), 1, dummyarray, wxCB_DROPDOWN);
+    TextBox = new wxStaticText(this, ID_FILE_TEXT_BOX, wxT(""),
+        wxDefaultPosition, wxSize(20, 20), wxSUNKEN_BORDER |
+        wxST_NO_AUTORESIZE);
     // Add it to the appropriate sizer
-    TopHorizontalSizer->Add(FileComboBox, 1, wxALIGN_CENTRE, 5);
+    TopHorizontalSizer->Add(TextBox, 1, wxALIGN_CENTRE, 5);
 
     // Create the pick file button
     PickFileButton = new wxButton(this, ID_PICK_FILE_BUTTON,
-        wxT("..."), wxDefaultPosition, wxSize(20,20), 0);
+        wxT("..."), wxDefaultPosition, wxSize(20, 20), 0);
     // Add it to the appropriate sizer
     TopHorizontalSizer->Add(PickFileButton, 0, wxALIGN_CENTRE, 5);
 
@@ -88,6 +81,7 @@ void CompareFilePanel::SetFile()
         Buffer = Application::ReadFile(Filename, true);
         // Fill the textbox with the file buffer
         FileTextEdit->DisplayText(Buffer);
+        TextBox->SetLabel(Filename);
     }
 }
 
@@ -131,6 +125,8 @@ void CompareFilePanel::Recompare(Hunk *FirstHunk, DiffFileNumber FileNumber)
             // Go to the next hunk
             p = p->GetNextHunk();
         }
+        // Fixed a problem with highlighting (see function for more info)
+        FileTextEdit->BlankLineStyleBugHack();
 
         // Set readonly back to true so user can't edit it
         //FileTextEdit->SetReadOnly(true);
