@@ -5,6 +5,8 @@
 #ifndef _IDENTIFIERS_H_
 #define _IDENTIFIERS_H_
 
+#include "wx/wx.h"
+
 enum
 {
     ID_DO_NOT_REMOVE = wxID_HIGHEST,
@@ -14,6 +16,13 @@ enum
     // TabBrowser IDs
     ID_TAB_BROWSER_NOTEBOOK,
     ID_TAB_BROWSER_PANEL,
+    // CompareFilePanel IDs
+    ID_COMPARE_FILE_PANEL,
+    ID_FILE_COMBO_BOX,
+    ID_PICK_FILE_BUTTON,
+    ID_FILE_TEXT_EDIT,
+    // CompareFilesUI IDs
+    ID_SEPARATOR_PANEL,
     // Menu bar IDs
     ID_FILE_MENU,
     ID_FILECOMPARE_MENU,
@@ -53,6 +62,8 @@ enum
     ID_TEST_TWOWAY_MERGE_MENU,
     ID_TEST_STACK_MENU,
     ID_TEST_COMPAREFOLDERS_MENU,
+    ID_TEST_COMPAREFILESUI_MENU,
+    ID_TEST_COMPAREFILESUI3WAY_MENU
 };
 
 #endif
