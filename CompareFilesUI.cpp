@@ -20,6 +20,7 @@ using namespace MojoMerge;
 CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
 {
     // Set our member defaults
+    ReadyToCompare = false;
     MyMerge = NULL;
     TextCtrlOffset = 0;
     LastScrolledWindow = DiffFile_One;
@@ -97,7 +98,10 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
 
 uint32 CompareFilesUI::RequestCommandStatus()
 {
-    return 0;
+    uint32 Status = 0;
+
+    Status |= ReadyToCompare?Cmd_Recompare:0;
+    return Status;
 }
 
 void CompareFilesUI::SetFile(DiffFileNumber File)
@@ -129,6 +133,7 @@ void CompareFilesUI::SetFile(DiffFileNumber File)
     }
 
     CheckReadyToRecompare();
+    Application::UpdateAvailableCommandsForActiveWindow();
 }
 
 void CompareFilesUI::CheckReadyToRecompare()
@@ -142,6 +147,7 @@ void CompareFilesUI::CheckReadyToRecompare()
         if(!FilePanels[i]->GetBuffer())
         {
             Application::CmdSetStatusBarMsg(wxT("Please select all files to be compared."));
+            ReadyToCompare = false;
             Flag = true;
             break;
         }
@@ -150,6 +156,7 @@ void CompareFilesUI::CheckReadyToRecompare()
     // If flag not set, all of the files are valid
     if(!Flag)
     {
+        ReadyToCompare = true;
         Application::CmdSetStatusBarMsg(wxT("To perform a recompare press F5"));
     }
 }

@@ -294,6 +294,7 @@ namespace MojoMerge
         int LastDiffFile;
         int TextCtrlOffset;
         bool ThreeWayNotTwoWay;
+        bool ReadyToCompare;
         // Which file was scrolled last
         DiffFileNumber LastScrolledWindow;
         // Scroll position of each file after the last painted event
