@@ -35,7 +35,7 @@ CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
     ID |= TabWindow_CompareFilesUI;
 
     // For now, just set our Name to some test name
-    strcpy(Name, "CompareFilesUI test");
+    strcpy(Name, "CompareFilesUI");
 
     // Retain variable for future use
     this->ThreeWayNotTwoWay = ThreeWayNotTwoWay;
@@ -184,19 +184,21 @@ void CompareFilesUI::Recompare()
         FilePanels[i]->Recompare(FirstHunk, (DiffFileNumber)i);
 
     // Redraw the separator panels since we update the files
-    SeparatorPanels[0]->Refresh();
+    wxClientDC PanelDC1(SeparatorPanels[0]);
+    DrawDiffConnectLines(&PanelDC1, 0);
     if(ThreeWayNotTwoWay)
-        SeparatorPanels[1]->Refresh();
+    {
+        wxClientDC PanelDC2(SeparatorPanels[1]);
+        DrawDiffConnectLines(&PanelDC2, 1);
+    }
 }
 
-void CompareFilesUI::OnSeparatorPainted(wxPaintEvent &event)
+void CompareFilesUI::OnSeparatorPainted(wxPaintEvent &event, wxDC *dc)
 {
     int PanelIndex;        // Which panel to draw on
 
     // Get the separator panel that raised the event
     SeparatorPanel *Panel = (SeparatorPanel *)event.m_eventObject;
-    // We have to create a DC even if we don't use it
-    wxPaintDC dc(Panel);
     if(Panel == SeparatorPanels[0])
         PanelIndex = 0;
     else
@@ -204,9 +206,7 @@ void CompareFilesUI::OnSeparatorPainted(wxPaintEvent &event)
 
     // Draw the diff connection lines between the windows for any hunks that
     //  currently exist in our hunk list.
-    DrawDiffConnectLines(&dc, PanelIndex);
-    // Let the event continue to propogate
-    event.Skip();
+    DrawDiffConnectLines(dc, PanelIndex);
 }
 
 void CompareFilesUI::OnFileTextPosChanged(wxStyledTextEvent& event)
@@ -242,11 +242,16 @@ void CompareFilesUI::DetermineAutoScrolling(DiffFileNumber FileNumber)
             AutoAdjustScrolling(FileNumber);
             // Retain a reference to the window that scrolled last
             LastScrolledWindow = FileNumber;
+            Application::Debug("Calling refresh for separator panels");
             // Redraw the separator panels since we've scrolled one or more
             //  of the windows
-            SeparatorPanels[0]->Refresh();
+            wxClientDC PanelDC1(SeparatorPanels[0]);
+            DrawDiffConnectLines(&PanelDC1, 0);
             if(ThreeWayNotTwoWay)
-                SeparatorPanels[1]->Refresh();
+            {
+                wxClientDC PanelDC2(SeparatorPanels[1]);
+                DrawDiffConnectLines(&PanelDC2, 1);
+            }
         }
     }
 }
@@ -801,9 +806,13 @@ void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
     }
 
     // Redraw the separator panels since we've changed text
-    SeparatorPanels[0]->Refresh();
+    wxClientDC PanelDC1(SeparatorPanels[0]);
+    DrawDiffConnectLines(&PanelDC1, 0);
     if(ThreeWayNotTwoWay)
-        SeparatorPanels[1]->Refresh();
+    {
+        wxClientDC PanelDC2(SeparatorPanels[1]);
+        DrawDiffConnectLines(&PanelDC2, 1);
+    }
 
     // Force the auto scroll to work even though we haven't scrolled anything
     LastScrollPosition[LastChange->FileNumber] = 0;
