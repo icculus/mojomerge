@@ -136,16 +136,25 @@
 				RelativePath="ConfigUI.cpp">
 			</File>
 			<File
+				RelativePath=".\FileMergeTransaction.cpp">
+			</File>
+			<File
 				RelativePath="GNUDiff.cpp">
 			</File>
 			<File
 				RelativePath="Hunk.cpp">
 			</File>
 			<File
+				RelativePath=".\LineBuffer.cpp">
+			</File>
+			<File
 				RelativePath="MainWindow.cpp">
 			</File>
 			<File
 				RelativePath="Menu.cpp">
+			</File>
+			<File
+				RelativePath=".\Merge.cpp">
 			</File>
 			<File
 				RelativePath=".\TabBrowser.cpp">
@@ -185,6 +194,9 @@
 				RelativePath="Diff.h">
 			</File>
 			<File
+				RelativePath=".\FileMergeTransaction.h">
+			</File>
+			<File
 				RelativePath="GNUDiff.h">
 			</File>
 			<File
@@ -221,7 +233,10 @@
 				RelativePath="Toolbar.h">
 			</File>
 			<File
-				RelativePath="UndoBuffer.h">
+				RelativePath=".\Transaction.h">
+			</File>
+			<File
+				RelativePath=".\TransactionBuffer.h">
 			</File>
 		</Filter>
 		<Filter
