@@ -77,8 +77,10 @@ namespace MojoMerge
         // when not in debug mode.
 #ifdef _DEBUG
         static void Debug(char *format, ...);
+        static void DebugNoCR(char *format, ...);
 #else
         static void Debug(char *format, ...) {};
+        static void DebugNoCR(char *format, ...) {};
 #endif
     private:
         // Location of temp folder
