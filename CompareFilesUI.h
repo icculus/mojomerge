@@ -267,7 +267,7 @@ namespace MojoMerge
         void OnPanel1Paint(wxPaintEvent& event);
         void OnPanel2Paint(wxPaintEvent& event);
         void OnMergeButtonClick(wxCommandEvent& event);
-        virtual void OnSeparatorPainted(wxPaintEvent &event);
+        virtual void OnSeparatorPainted(wxPaintEvent &event, wxDC *dc);
         //void OnSeparatorPainted(wxPaintEvent& event);
         
         // Diff object to use for file comparisons
