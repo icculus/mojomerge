@@ -31,6 +31,42 @@ namespace MojoMerge
          *      First hunk of a hunk list, or NULL if no differences found.
          */
         static Hunk *TestGNUDiff_ThreeWay();
+
+        /*  TestLineBuffer
+         *      Tests the functionality of the LineBuffer object
+         *  Params
+         *      none
+         *  Returns
+         */
+        static void TestLineBuffer();
+
+        /*  TestMerge_TwoWay
+         *      Tests the two-way merge functionality by merging the result of
+         *      the TestGNUDiff_TwoWay
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void TestMerge_TwoWay();
+
+        /*  TestStack
+         *      Tests the Stack object
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void TestStack();
+
+        /*  TestCompareFolders
+         *      Tests the CompareFolders object
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void TestCompareFolders();
     private:
         static void ReadTestFile(const char *Filename, char *Buffer);
     };
