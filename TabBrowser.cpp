@@ -51,6 +51,8 @@ void TabBrowser::AddWindow(TabWindow *Window)
 
 void TabBrowser::RemoveActiveWindow()
 {
+    // Delete the currently active page
+    Notebook->DeletePage(Notebook->GetSelection());
 }
 
 TabWindow *TabBrowser::GetActiveWindow()
