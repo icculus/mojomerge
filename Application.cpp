@@ -47,6 +47,18 @@ bool Application::OnInit()
     return true;
 }
 
+int Application::OnExit()
+{
+    // Cleanup the config object
+    Config::Deinit();
+
+    // Delete the temporary folder string if it has been set
+    if(TempFolder)
+        delete TempFolder;
+
+    return 0;
+}
+
 void Application::CmdNewComparison()
 {
     // Create a new comparison window
@@ -148,19 +160,19 @@ void Application::CmdCompareFolders()
 void Application::CmdTwoWayComparison()
 {
     // Coerce the current window and print
-    GetWindowAsCompareUI(Browser->GetActiveWindow())->Print();
+    GetWindowAsCompareUI(Browser->GetActiveWindow())->TwoWayComparison();
 }
 
 void Application::CmdThreeWayComparison()
 {
     // Coerce the current window and print
-    GetWindowAsCompareUI(Browser->GetActiveWindow())->Print();
+    GetWindowAsCompareUI(Browser->GetActiveWindow())->ThreeWayComparison();
 }
 
 void Application::CmdRecompare()
 {
     // Coerce the current window and print
-    GetWindowAsCompareUI(Browser->GetActiveWindow())->Print();
+    GetWindowAsCompareUI(Browser->GetActiveWindow())->Recompare();
 }
 
 void Application::CmdPreferences()
@@ -182,6 +194,58 @@ void Application::CmdExit()
 {
     // Dispose of our main window
     delete Window;
+}
+
+char *Application::ReadFile(const char *Filename,
+    bool NullTerminator, uint32 *BufferLength)
+{
+    char *Buffer = NULL;    // Buffer to read characters in
+    uint32 FileLength;      // Length of input file
+    int i;                  // Temporary variable
+
+    // Number of characters read from file
+    size_t CharsRead;
+
+    // Filename or Buffer can't be NULL
+    assert(Filename);
+    // Open file for reading
+    FILE *Stream = fopen(Filename, "rb");
+    // Stream can't be NULL
+    if(Stream)
+    {
+        // Go to the end of the file
+        fseek(Stream, 0, SEEK_END);
+        // Get the current position (the length of the file)
+        FileLength = ftell(Stream);
+        // Allocate buffer to hold the entire file (plus optional null term.)
+        Buffer = new char[FileLength + 1];
+        // Buffer can't be NULL
+        assert(Buffer);
+        // Go back to the beginning of the file
+        fseek(Stream, 0, SEEK_SET);
+        // Read contents of file into buffer
+        CharsRead = fread(Buffer, sizeof(char), FileLength, Stream);
+        // If we couldn't read the entire file
+        if(CharsRead != FileLength)
+        {
+            // Remove the buffer
+            delete Buffer;
+            // Return NULL to indicate an error
+            Buffer = NULL;
+        }
+        else
+        {
+            // Add the terminating null character if applicable
+            if(NullTerminator)
+                Buffer[CharsRead] = 0x00;
+            // Close the file stream
+            i = fclose(Stream);
+            // Make sure file closed successfully
+            assert(i == 0);
+        }
+    }
+
+    return Buffer;
 }
 
 const char *Application::GetTempFolder()
@@ -254,11 +318,18 @@ void Application::Debug(char *format, ...)
     va_start(args, format);
     wxVLogTrace(format, args);
 }
+
 void Application::DebugNoCR(char *format, ...)
 {
     va_list args;
 
     va_start(args, format);
     wxVLogTrace(format, args);
+}
+
+void Application::AddTestTab(TabWindow *NewWindow)
+{
+    // Add specified window to our tab browser object
+    Browser->AddWindow(NewWindow);
 }
 #endif

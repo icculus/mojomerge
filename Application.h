@@ -54,6 +54,29 @@ namespace MojoMerge
         static void CmdStatusbar();
         static void CmdExit();
 
+        /*  ReadFile
+         *      Standard function that reads a file and stores the bytes in a
+         *      chararacter buffer
+         *  Params
+         *      Filename
+         *          Full filename and path to read
+         *      NullTerminator
+         *          Set to true if ReadFile should put a null terminator at the
+         *          end of the buffer.
+         *      BufferLength
+         *          This function writes to this variable if it is not NULL.
+         *          The value represents how many bytes are in the buffer.
+         *          This does NOT include the terminating null.
+         *  Returns
+         *      Returns the buffer contained in the file, or returns NULL if
+         *      the file could not be read.
+         *
+         *      The caller is responsible for deallocating the returned char *
+         *      when they are finished with it.
+         */
+        static char *ReadFile(const char *Filename, 
+            bool NullTerminator = true, uint32 *BufferLength = NULL);
+
         /*  GetTempFolder
          *      Returns the folder that should be used for putting temporary
          *      files into.
@@ -82,6 +105,20 @@ namespace MojoMerge
         static void Debug(char *format, ...) {};
         static void DebugNoCR(char *format, ...) {};
 #endif
+
+        /*  AddTestTab
+         *      Adds the specified window to the TabBrowser.  This is purely
+         *      used for testing/debugging and is not available in release
+         *      builds
+         *  Params
+         *      NewWindow
+         *          Window to add to the browser
+         *  Returns
+         *      none
+         */
+#ifdef _DEBUG
+        static void AddTestTab(TabWindow *NewWindow);
+#endif
     private:
         // Location of temp folder
         static char *TempFolder;
@@ -91,6 +128,7 @@ namespace MojoMerge
         static TabBrowser *Browser;
 
         virtual bool OnInit();
+        virtual int OnExit();
 
         /*  CreateDefaultComparisonWindow
          *      Creates a comparison window based on configured default settings
