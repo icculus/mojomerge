@@ -36,12 +36,13 @@ Hunk::Hunk(Hunk *Prev, uint32 Start1, uint32 End1, uint32 Start2, uint32 End2,
 Hunk::Hunk(Hunk *FirstHunk)
 {
     // First hunk can't be NULL
-    assert(FirstHunk);
+    //assert(FirstHunk);
     // Set flag that designates it as a link head
     LinkHead = true;
     Prev = NULL;
     Next = FirstHunk;
-    FirstHunk->Prev = this;
+    if(FirstHunk)
+        FirstHunk->Prev = this;
 }
 
 Hunk::~Hunk()
