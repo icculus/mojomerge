@@ -4,7 +4,13 @@
 
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -13,6 +19,7 @@
 #ifdef WIN32
     #define mktemp _mktemp
     #define unlink _unlink
+    #define popen _popen
 #endif
 
 using namespace MojoMerge;
@@ -102,7 +109,7 @@ void GNUDiff::WriteTempFile(const char *Buffer, char *File)
 	strcat(File, Template);
 	// TODO - Make sure _mktemp or equivelant is available on all platforms.
 	// Create a unique filename
-	TmpFile = _mktemp(File);
+	TmpFile = mktemp(File);
 	// If TmpFile is NULL, we've got a problem
 	assert(TmpFile);
 
@@ -118,9 +125,8 @@ void GNUDiff::WriteTempFile(const char *Buffer, char *File)
 
 void GNUDiff::RemoveTempFile(const char *File)
 {
-	// TODO - Find version of _unlink for other platforms
 	// Delete the file
-	assert(_unlink(File) == 0);
+	assert(unlink(File) == 0);
 }
 
 void GNUDiff::GetDiffOutput(const char *Path, const char *CommandLine)
@@ -150,7 +156,7 @@ void GNUDiff::GetDiffOutput(const char *Path, const char *CommandLine)
     // Memory allocation error
     assert(DiffResult);
     // Run the diff program
-    Pipe = _popen(FullCommandLine, "rb");
+    Pipe = popen(FullCommandLine, "rb");
     // Pipe can't be NULL
     assert(Pipe);
     // Read the output of 'diff'
