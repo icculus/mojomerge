@@ -1,0 +1,143 @@
+/*  MainWindow.h - Primary application window
+ *
+ */
+
+#ifndef _MAINWINDOW_H_
+#define _MAINWINDOW_H_
+
+#include "wx/wx.h"
+#include "Menu.h"
+#include "Toolbar.h"
+#include "Application.h"
+#include "Test.h"
+
+namespace MojoMerge
+{
+    class MainWindow : public wxFrame
+    {
+    public:
+        MainWindow();
+    private:
+        DECLARE_EVENT_TABLE()
+
+        /*  Menu Event Handlers
+         *      These functions handle the associated menu events.  They will
+         *      simply call the Application command functions assoicated with
+         *      the event.  These are implicitly inline to avoid the overhead
+         *      of calling several functions unnecessarily.
+         *  Parameters
+         *      event
+         *          Event object passed when event is generated
+         *  Returns
+         *      none
+         */
+        void OnNewComparison(wxCommandEvent& event)
+        {
+            Application::CmdNewComparison();
+        }
+        void OnSaveFirstFile(wxCommandEvent& event)
+        {
+            Application::CmdSaveFirstFile();
+        }
+        void OnSaveSecondFile(wxCommandEvent& event)
+        {
+            Application::CmdSaveSecondFile();
+        }
+        void OnSaveThirdFile(wxCommandEvent& event)
+        {
+            Application::CmdSaveThirdFile();
+        }
+        void OnSaveFirstFileAs(wxCommandEvent& event)
+        {
+            Application::CmdSaveFirstFileAs();
+        }
+        void OnSaveSecondFileAs(wxCommandEvent& event)
+        {
+            Application::CmdSaveSecondFileAs();
+        }
+        void OnSaveThirdFileAs(wxCommandEvent& event)
+        {
+            Application::CmdSaveThirdFileAs();
+        }
+        void OnPrint(wxCommandEvent& event)
+        {
+            Application::CmdPrint();
+        }
+        void OnPrintPreview(wxCommandEvent& event) 
+        {
+            Application::CmdPrintPreview();
+        }
+        void OnUndo(wxCommandEvent& event)
+        {
+            Application::CmdUndo();
+        }
+        void OnRedo(wxCommandEvent& event) 
+        {
+            Application::CmdRedo();
+        }
+        void OnCut(wxCommandEvent& event) 
+        {
+            Application::CmdCut();
+        }
+        void OnCopy(wxCommandEvent& event) 
+        {
+            Application::CmdCopy();
+        }
+        void OnPaste(wxCommandEvent& event) 
+        {
+            Application::CmdPaste();
+        }
+        void OnSelectAll(wxCommandEvent& event)
+        {
+            Application::CmdSelectAll();
+        }
+        void OnCompareFiles(wxCommandEvent& event)
+        {
+            Application::CmdCompareFiles();
+        }
+        void OnCompareFolders(wxCommandEvent& event)
+        {
+            Application::CmdCompareFolders();
+        }
+        void OnTwoWayComparison(wxCommandEvent& event)
+        {
+            Application::CmdTwoWayComparison();
+        }
+        void OnThreeWayComparison(wxCommandEvent& event)
+        {
+            Application::CmdThreeWayComparison();
+        }
+        void OnRecompare(wxCommandEvent& event)
+        {
+            Application::CmdRecompare();
+        }
+        void OnPreferences(wxCommandEvent& event)
+        {
+            Application::CmdPreferences();
+        }
+        void OnToolbar(wxCommandEvent& event)
+        {
+            Application::CmdToolbar();
+        }
+        void OnStatusbar(wxCommandEvent& event) 
+        {
+            Application::CmdStatusbar();
+        }
+        void OnTestTwoWayDiff(wxCommandEvent& event) 
+        {
+            // Test two-way diff and just remove the hunk list for now
+            delete Test::TestGNUDiff_TwoWay();
+        }
+        void OnTestThreeWayDiff(wxCommandEvent& event) 
+        {
+            // Test three-way diff and just remove the hunk list for now
+            delete Test::TestGNUDiff_ThreeWay();
+        }
+
+        // Menu object contained in MainWindow
+        Menu *MyMenu;
+        Toolbar *MyToolbar;
+    };
+}
+
+#endif
