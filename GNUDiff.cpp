@@ -10,6 +10,11 @@
 #include <string.h>
 #include "GNUDiff.h"
 
+#ifdef WIN32
+    #define mktemp _mktemp
+    #define unlink _unlink
+#endif
+
 using namespace MojoMerge;
 
 GNUDiff::GNUDiff(const char *DiffPath, const char *Diff3Path,
