@@ -215,53 +215,6 @@ void Test::TestMerge_TwoWay()
     delete Buffer2;
 }
 
-// TODO - Need to write test case for three-way diff
-/*void Test::TestMerge_ThreeWay()
-{
-    Hunk *MyHunk;
-    Hunk *CurHunk, *NextHunk;
-    Merge *MyMerge;
-    LineBuffer *FileBuffer;
-    int i;
-    DiffFil
-
-    // Get some diff hunks from our diff test
-    MyHunk = Test::TestGNUDiff_TwoWay();
-
-    // Buffers that contain data from each file being compared
-    char Buffer1[TEST_MAXFILESIZE];
-    char Buffer2[TEST_MAXFILESIZE];
-    char Buffer3[TEST_MAXFILESIZE];
-    ReadTestFile(TEST_FILE1, Buffer1);
-    ReadTestFile(TEST_FILE2, Buffer2);
-    ReadTestFile(TEST_FILE2, Buffer3);
-
-    // Create the merge object
-    MyMerge = new Merge(MyHunk, Buffer1, Buffer2, Buffer3);
-    // Get the first hunk in the list
-    CurHunk = MyHunk;
-    while(CurHunk)
-    {
-        // Get the next hunk before we resolve the current one since it gets
-        //  removed after being resolved.
-        NextHunk = CurHunk->GetNextHunk();
-        if(NextHunk->GetDiffFile() == DiffFile_One || NextHunk-
-        // Execute the merge on each hunk to make Buffer2 look like Buffer1
-        MyMerge->ResolveDiff(CurHunk, DiffFile_One, DiffFile_Two);
-        // Set the current hunk to be the next hunk in the list
-        CurHunk = NextHunk;
-    }
-
-    FileBuffer = MyMerge->GetBuffer(DiffFile_Two);
-    for(i = 0; i < FileBuffer->GetLineCount(); i++)
-    {
-        Application::DebugNoCR("%s", FileBuffer->GetLine(i+1));
-    }
-
-    // Done with the merge object...gone!!
-    delete MyMerge;
-}*/
-
 void Test::TestStack()
 {
     Stack <uint32>MyStack(10);
