@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../wxWindows/include;../wxWindows/lib/mswd"
+				AdditionalIncludeDirectories="../wxWindows/include;../wxWindows/contrib/include;../wxWindows/lib/mswd"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;__WINDOWS__;__WXDEBUG__;WXDEBUG=1;WINVER=0x400;__WIN95__;__WIN32__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib comctl32.lib rpcrt4.lib ../wxWindows/lib/wxmswd.lib ../wxWindows/lib/jpegd.lib ../wxWindows/lib/pngd.lib ../wxWindows/lib/regexd.lib ../wxWindows/lib/tiffd.lib ../wxWindows/lib/zlibd.lib"
+				AdditionalDependencies="wsock32.lib comctl32.lib rpcrt4.lib ../wxWindows/lib/wxmswd.lib ../wxWindows/lib/jpegd.lib ../wxWindows/lib/pngd.lib ../wxWindows/lib/regexd.lib ../wxWindows/lib/tiffd.lib ../wxWindows/lib/zlibd.lib ../wxWindows/contrib/src/stc/Debug/stc.lib"
 				OutputFile="$(OutDir)/MojoMerge.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames=""
@@ -124,6 +124,9 @@
 				RelativePath="Application.cpp">
 			</File>
 			<File
+				RelativePath=".\CompareFilePanel.cpp">
+			</File>
+			<File
 				RelativePath="CompareFilesUI.cpp">
 			</File>
 			<File
@@ -137,6 +140,9 @@
 			</File>
 			<File
 				RelativePath="ConfigUI.cpp">
+			</File>
+			<File
+				RelativePath=".\DiffTextEdit.cpp">
 			</File>
 			<File
 				RelativePath=".\FileMergeTransaction.cpp">
@@ -182,6 +188,9 @@
 				RelativePath="Application.h">
 			</File>
 			<File
+				RelativePath=".\CompareFilePanel.h">
+			</File>
+			<File
 				RelativePath="CompareFilesUI.h">
 			</File>
 			<File
@@ -204,6 +213,9 @@
 			</File>
 			<File
 				RelativePath="Diff.h">
+			</File>
+			<File
+				RelativePath=".\DiffTextEdit.h">
 			</File>
 			<File
 				RelativePath=".\FileMergeTransaction.h">
