@@ -117,7 +117,8 @@ namespace MojoMerge
         /*  Replace
          *      Removes the hunk from the list and replaces it with the
          *      specified hunk.  If we are not part of a list, this function
-         *      has no affect.
+         *      has no affect.  Note that this does not delete the original
+         *      hunk from memory.
          *  Params
          *      NewHunk
          *          Hunk that will replace this hunk.  It is assumed that this
