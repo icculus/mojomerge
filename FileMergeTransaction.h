@@ -50,7 +50,6 @@ namespace MojoMerge
          *  Returns
          *      none
          */
-        // TODO - Source and dest buffer?
         FileMergeTransaction(Hunk *OriginalHunk, LineBuffer *SourceBuffer, 
             LineBuffer *DestBuffer, DiffFileNumber SourceFileNumber,
             DiffFileNumber DestFileNumber);
