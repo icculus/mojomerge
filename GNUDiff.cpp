@@ -12,17 +12,12 @@
 
 using namespace MojoMerge;
 
-// Set static members to their defaults
-char *GNUDiff::DiffResult = NULL;
-
 GNUDiff::GNUDiff(const char *DiffPath, const char *Diff3Path,
     const char *TempFolder)
 {
-    // Allocate buffer for diff result
-    if(DiffResult == NULL)
-        DiffResult = new char[DIFF_RESULT_BUFFER_SIZE];
-    // Memory allocation error
-    assert(DiffResult);
+    // Set defaults for member variables 
+    DiffResult = NULL;
+
 	// Paths must not be NULL
 	assert(DiffPath);
 	assert(Diff3Path);
@@ -81,6 +76,12 @@ Hunk *GNUDiff::CompareFiles(DiffOptions Options, const char *Buffer1,
 	// Remove temp diff files
 	RemoveTempFile(File1);
 	RemoveTempFile(File2);
+    // Deallocate the DiffResult buffer if it was allocated
+    if(DiffResult)
+    {
+        delete DiffResult;
+        DiffResult = NULL;
+    }
 
 	return DiffHunk;
 }
@@ -139,6 +140,10 @@ void GNUDiff::GetDiffOutput(const char *Path, const char *CommandLine)
     strcat(FullCommandLine, SEPARATOR);
     strcat(FullCommandLine, CommandLine);
 
+    // Allocate buffer for diff result
+    DiffResult = new char[DIFF_RESULT_BUFFER_SIZE];
+    // Memory allocation error
+    assert(DiffResult);
     // Run the diff program
     Pipe = _popen(FullCommandLine, "rb");
     // Pipe can't be NULL
