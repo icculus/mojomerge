@@ -7,6 +7,7 @@
 #define _CONFIG_H_
 
 #include "wx/config.h"
+#include "DataTypes.h"
 
 namespace MojoMerge
 {
@@ -81,7 +82,7 @@ namespace MojoMerge
         static void SetShowInlineChanges(bool Value);
 
         /*  GetShowInlineChanges
-         *  Sets option for showing inline character changes on each line
+         *  Gets option for showing inline character changes on each line
          *  Params
          *      none
          *          
@@ -89,6 +90,25 @@ namespace MojoMerge
          *      TRUE to show inline changes, FALSE to hide them
          */
         static bool GetShowInlineChanges();
+
+        /*  GetUndoSize
+         *  Gets option for how large the undo buffer will be
+         *  Params
+         *      none
+         *  Returns
+         *      See description
+         */
+        static uint32 GetUndoSize();
+
+        /*  SetUndoSize
+         *  Sets option for how large the undo buffer will be
+         *  Params
+         *      Size
+         *          Size of the undo buffer
+         *  Returns
+         *      none
+         */
+        static SetUndoSize(uint32 Size);
     private:
         static wxConfig *MyConfigData;
     };
