@@ -37,9 +37,24 @@ TabBrowser *MainWindow::GetTabBrowser()
     return MyTabBrowser;
 }
 
-void MainWindow::OnNewComparison(wxCommandEvent& event)
+void MainWindow::OnNewTwoWayFileComparison(wxCommandEvent& event)
 {
-    Application::CmdNewComparison();
+    Application::CmdNewTwoWayFileComparison();
+}
+
+void MainWindow::OnNewThreeWayFileComparison(wxCommandEvent& event)
+{
+    Application::CmdNewThreeWayFileComparison();
+}
+
+void MainWindow::OnNewTwoWayFolderComparison(wxCommandEvent& event)
+{
+    Application::CmdNewTwoWayFolderComparison();
+}
+
+void MainWindow::OnNewThreeWayFolderComparison(wxCommandEvent& event)
+{
+    Application::CmdNewThreeWayFolderComparison();
 }
 
 void MainWindow::OnSaveFirstFile(wxCommandEvent& event)
@@ -211,7 +226,10 @@ void MainWindow::OnTestCompareFilesUI3Way(wxCommandEvent& event)
 
 // Event mappings for the menu
 BEGIN_EVENT_TABLE(MainWindow, wxFrame)
-    EVT_MENU(ID_FILECOMPARE_MENU, MainWindow::OnNewComparison)
+    EVT_MENU(ID_TWOWAYFILECOMPARE_MENU, MainWindow::OnNewTwoWayFileComparison)
+    EVT_MENU(ID_THREEWAYFILECOMPARE_MENU, MainWindow::OnNewThreeWayFileComparison)
+    EVT_MENU(ID_TWOWAYFOLDERCOMPARE_MENU, MainWindow::OnNewTwoWayFolderComparison)
+    EVT_MENU(ID_THREEWAYFOLDERCOMPARE_MENU, MainWindow::OnNewThreeWayFolderComparison)
     EVT_MENU(ID_SAVE_FILE1_MENU, MainWindow::OnSaveFirstFile)
     EVT_MENU(ID_SAVE_FILE2_MENU, MainWindow::OnSaveSecondFile)
     EVT_MENU(ID_SAVE_FILE3_MENU, MainWindow::OnSaveThirdFile)
