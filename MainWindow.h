@@ -77,7 +77,10 @@ namespace MojoMerge
         void OnPaste(wxCommandEvent& event); 
         void OnSelectAll(wxCommandEvent& event);
         void OnRecompare(wxCommandEvent& event);
-        void OnPreferences(wxCommandEvent& event);
+        //void OnPreferences(wxCommandEvent& event);
+        void OnIgnoreWhitespace(wxCommandEvent& event);
+        void OnIgnoreLineEndings(wxCommandEvent& event);
+        void OnIgnoreCase(wxCommandEvent& event);
         void OnToolbar(wxCommandEvent& event);
         void OnStatusbar(wxCommandEvent& event);
         void OnCheckMail(wxCommandEvent& event);

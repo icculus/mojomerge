@@ -193,11 +193,22 @@ void Application::CmdRecompare()
     GetWindowAsCompareUI(Browser->GetActiveWindow())->Recompare();
 }
 
-void Application::CmdPreferences()
+void Application::CmdIgnoreWhitespace(bool Value)
 {
-    // TODO - Eventually we'll pass a real config object here
-    ConfigUI MyConfigUI(NULL);
-    MyConfigUI.ShowModal();
+    Debug("Ignore Whitespace = %d", Value);
+    Config::SetIgnoreWhitespace(Value);
+}
+
+void Application::CmdIgnoreLineEndings(bool Value)
+{
+    Debug("Ignore Line Endings = %d", Value);
+    Config::SetIgnoreLineEndings(Value);
+}
+
+void Application::CmdIgnoreCase(bool Value)
+{
+    Debug("Ignore Case = %d", Value);
+    Config::SetIgnoreCase(Value);
 }
 
 void Application::CmdToolbar()

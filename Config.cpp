@@ -181,3 +181,66 @@ void Config::SetDiff3Path(wxString &Value)
     // Fails if write was not successful
     assert(i);
 }
+
+void Config::SetIgnoreWhitespace(bool Value)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    bool i = MyConfigData->Write(wxT("IgnoreWhitespace"), Value);
+    // Fails if write was not successful
+    assert(i);
+}
+
+void Config::SetIgnoreLineEndings(bool Value)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    bool i = MyConfigData->Write(wxT("IgnoreLineEndings"), Value);
+    // Fails if write was not successful
+    assert(i);
+}
+
+void Config::SetIgnoreCase(bool Value)
+{
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    bool i = MyConfigData->Write(wxT("IgnoreCase"), Value);
+    // Fails if write was not successful
+    assert(i);
+}
+
+bool Config::GetIgnoreWhitespace()
+{
+    // Return value
+    bool Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("IgnoreWhitespace"), &Value, false);
+
+    return Value;
+}
+
+bool Config::GetIgnoreLineEndings()
+{
+    // Return value
+    bool Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("IgnoreLineEndings"), &Value, false);
+
+    return Value;
+}
+
+bool Config::GetIgnoreCase()
+{
+    // Return value
+    bool Value;
+
+    // MyConfigData can't be NULL
+    assert(MyConfigData);
+    MyConfigData->Read(wxT("IgnoreCase"), &Value, false);
+
+    return Value;
+}
