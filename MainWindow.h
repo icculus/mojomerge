@@ -67,6 +67,10 @@ namespace MojoMerge
 #ifdef _DEBUG
         void OnTestTwoWayDiff(wxCommandEvent& event);
         void OnTestThreeWayDiff(wxCommandEvent& event);
+        void OnTestLineBuffer(wxCommandEvent& event);
+        void OnTestTwoWayMerge(wxCommandEvent& event);
+        void OnTestStack(wxCommandEvent& event);
+        void OnTestCompareFolders(wxCommandEvent& event);
 #endif
         // Objects contained inside the window
         Menu *MyMenu;
