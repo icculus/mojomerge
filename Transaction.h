@@ -10,6 +10,7 @@ namespace MojoMerge
 {
     class Transaction
     {
+    public:
         /*  Undo
          *      Reverts a transaction as though it never took place.  The
          *      derived class must override this function.
