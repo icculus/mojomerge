@@ -5,6 +5,7 @@
 #include "Menu.h"
 #include "Identifiers.h"
 #include "Application.h"
+#include "Config.h"
 
 using namespace MojoMerge;
 
@@ -51,10 +52,15 @@ Menu::Menu()
     CompareMenu->Append(ID_RECOMPARE_MENU, wxT("Recompare\tF5"), wxT(""));
     CompareMenu->AppendSeparator();
     //CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Preferences"), wxT(""));
-    CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Ignore white-space"), wxT(""));
-    CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Ignore line ending diffs"), wxT(""));
+    CompareMenu->Append(ID_IGNORE_WHITESPACE_MENU, wxT("Ignore white-space"), wxT(""), true);
+    CompareMenu->Append(ID_IGNORE_CASE_MENU, wxT("Ignore case"), wxT(""), true);
+    //CompareMenu->Append(ID_IGNORE_LINE_ENDINGS_MENU, wxT("Ignore line ending diffs"), wxT(""), true);
     Append(CompareMenu, wxT("Compare"));
-    
+    // Set menu items based on config object
+    Check(ID_IGNORE_WHITESPACE_MENU, Config::GetIgnoreWhitespace());
+    Check(ID_IGNORE_CASE_MENU, Config::GetIgnoreCase());
+    //Check(ID_IGNORE_LINE_ENDINGS_MENU, Config::GetIgnoreLineEndings());
+
     // Create "View" menu
     //wxMenu *ViewMenu = new wxMenu();
     //ViewMenu->Append(ID_TOOLBAR_MENU, wxT("Toolbar"), wxT(""), TRUE);

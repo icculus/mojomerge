@@ -69,7 +69,10 @@ namespace MojoMerge
         static void CmdPaste();
         static void CmdSelectAll();
         static void CmdRecompare();
-        static void CmdPreferences();
+        //static void CmdPreferences();
+        static void CmdIgnoreWhitespace(bool Value);
+        static void CmdIgnoreLineEndings(bool Value);
+        static void CmdIgnoreCase(bool Value);
         static void CmdToolbar();
         static void CmdStatusbar();
         static void CmdExit();

@@ -148,6 +148,13 @@ namespace MojoMerge
          *      none
          */
         static void SetDiff3Path(wxString &Value);
+
+        static void SetIgnoreWhitespace(bool Value);
+        static void SetIgnoreLineEndings(bool Value);
+        static void SetIgnoreCase(bool Value);
+        static bool GetIgnoreWhitespace();
+        static bool GetIgnoreLineEndings();
+        static bool GetIgnoreCase();
     private:
         static wxConfig *MyConfigData;
     };

@@ -148,9 +148,19 @@ void MainWindow::OnRecompare(wxCommandEvent& event)
     Application::CmdRecompare();
 }
 
-void MainWindow::OnPreferences(wxCommandEvent& event)
+void MainWindow::OnIgnoreLineEndings(wxCommandEvent& event)
 {
-    Application::CmdPreferences();
+    Application::CmdIgnoreLineEndings(MyMenu->IsChecked(ID_IGNORE_LINE_ENDINGS_MENU));
+}
+
+void MainWindow::OnIgnoreCase(wxCommandEvent& event)
+{
+    Application::CmdIgnoreCase(MyMenu->IsChecked(ID_IGNORE_CASE_MENU));
+}
+
+void MainWindow::OnIgnoreWhitespace(wxCommandEvent& event)
+{
+    Application::CmdIgnoreWhitespace(MyMenu->IsChecked(ID_IGNORE_WHITESPACE_MENU));
 }
 
 void MainWindow::OnToolbar(wxCommandEvent& event)
@@ -251,7 +261,10 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
     EVT_MENU(ID_PASTE_MENU, MainWindow::OnPaste)
     EVT_MENU(ID_SELECTALL_MENU, MainWindow::OnSelectAll)
     EVT_MENU(ID_RECOMPARE_MENU, MainWindow::OnRecompare)
-    EVT_MENU(ID_PREFERENCES_MENU, MainWindow::OnPreferences)
+    //EVT_MENU(ID_PREFERENCES_MENU, MainWindow::OnPreferences)
+    EVT_MENU(ID_IGNORE_WHITESPACE_MENU, MainWindow::OnIgnoreWhitespace)
+    EVT_MENU(ID_IGNORE_LINE_ENDINGS_MENU, MainWindow::OnIgnoreLineEndings)
+    EVT_MENU(ID_IGNORE_CASE_MENU, MainWindow::OnIgnoreCase)
     EVT_MENU(ID_TOOLBAR_MENU, MainWindow::OnToolbar)
     EVT_MENU(ID_STATUSBAR_MENU, MainWindow::OnStatusbar)
     // Toolbar menu events

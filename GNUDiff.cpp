@@ -15,12 +15,16 @@
 #include <assert.h>
 #include <string.h>
 #include "GNUDiff.h"
+#include "Application.h"
 
 #ifdef WIN32
     #define mktemp _mktemp
     #define unlink _unlink
     #define popen _popen
 #endif
+
+#define DIFFOPTION_IGNOREWHITESPACE     " -w "
+#define DIFFOPTION_IGNORECASE           " -i "
 
 using namespace MojoMerge;
 
@@ -155,6 +159,7 @@ void GNUDiff::GetDiffOutput(const char *Path, const char *CommandLine)
     DiffResult = new char[DIFF_RESULT_BUFFER_SIZE];
     // Memory allocation error
     assert(DiffResult);
+    Application::Debug("Running '%s'", FullCommandLine);
     // Run the diff program
     Pipe = popen(FullCommandLine, "r");
     // Pipe can't be NULL
@@ -184,7 +189,17 @@ Hunk *GNUDiff::RunDiff(DiffOptions Options, const char *File1,
     // Combination of file name length plus space can't be too big
     assert(strlen(File1) + strlen(File2) + 1 < MOJO_MAX_PATH - 1);
 
-    strcpy(CommandLine, File1);
+    // Start with a blank commandline
+    strcpy(CommandLine, "");
+
+    // Append any commandline options as necessary
+    if(Options & DiffOption_IgnoreCase)
+        strcat(CommandLine, DIFFOPTION_IGNORECASE);
+    if(Options & DiffOption_IgnoreWhitespace)
+        strcat(CommandLine, DIFFOPTION_IGNOREWHITESPACE);
+
+    // Append files to compare at the end of the commandline
+    strcat(CommandLine, File1);
     strcat(CommandLine, " ");
     strcat(CommandLine, File2);
 
@@ -199,6 +214,8 @@ Hunk *GNUDiff::RunDiff3(DiffOptions Options, const char *File1,
 {
     // Commandline we pass to the 'diff3' program
     char CommandLine[MOJO_MAX_PATH];
+    // Special arguments we'll pass to Diff2
+    char Diff2CommandLine[MOJO_MAX_PATH];
 
     // Files can't be NULL
     assert(File1);
@@ -212,11 +229,27 @@ Hunk *GNUDiff::RunDiff3(DiffOptions Options, const char *File1,
     assert(strlen(File1) + strlen(File2) + strlen(File3) + 2 < 
         MOJO_MAX_PATH - 1);
 
-    strcpy(CommandLine, File1);
+    strcpy(CommandLine, "--diff-program=./diff.sh ");
+    strcat(CommandLine, File1);
     strcat(CommandLine, " ");
     strcat(CommandLine, File2);
     strcat(CommandLine, " ");
     strcat(CommandLine, File3);
+
+    //***This creates a special file that the diff2.sh script uses to pass args
+    //***to diff.
+    // Start with a blank commandline
+    strcpy(Diff2CommandLine, "");
+    // Append any commandline options as necessary
+    if(Options & DiffOption_IgnoreCase)
+        strcat(Diff2CommandLine, DIFFOPTION_IGNORECASE);
+    if(Options & DiffOption_IgnoreWhitespace)
+        strcat(Diff2CommandLine, DIFFOPTION_IGNOREWHITESPACE);
+    FILE *DiffOptionsStream = fopen("diffoptions", "wt");
+    assert(DiffOptionsStream);
+    fprintf(DiffOptionsStream, "%s", Diff2CommandLine);
+    fflush(DiffOptionsStream);
+    fclose(DiffOptionsStream);
 
 	// TODO - Options are not supported by 'diff3'
     GetDiffOutput(Diff3Path, CommandLine);

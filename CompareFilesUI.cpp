@@ -332,6 +332,12 @@ void CompareFilesUI::Recompare()
 {
     Hunk *FirstHunk;
     int i;
+    int MyDiffOptions = 0;
+
+    // Set our diffing options based on the Config object
+    MyDiffOptions |= Config::GetIgnoreCase()?DiffOption_IgnoreCase:0;
+    MyDiffOptions |= Config::GetIgnoreWhitespace()?DiffOption_IgnoreWhitespace:0;
+    MyDiffOptions |= Config::GetIgnoreLineEndings()?DiffOption_IgnoreLineEnding:0;
 
     // Get buffers from both file panels
     wxString Buffer1 = FilePanels[DiffFile_One]->GetBuffer();
@@ -351,7 +357,7 @@ void CompareFilesUI::Recompare()
         wxString Buffer3 = FilePanels[DiffFile_Three]->GetBuffer();
 
         // Perform three-way comparison
-        FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
+        FirstHunk = MyDiff->CompareFiles((DiffOptions)MyDiffOptions, 
             Buffer1.GetData(),
             Buffer2.GetData(),
             Buffer3.GetData());
@@ -367,7 +373,7 @@ void CompareFilesUI::Recompare()
     // If two-way comparison
     else
     {
-        FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
+        FirstHunk = MyDiff->CompareFiles((DiffOptions)MyDiffOptions, 
             Buffer1.GetData(),
             Buffer2.GetData());
         // Only create Merge object if there are diffs
