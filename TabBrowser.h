@@ -26,6 +26,17 @@ namespace MojoMerge
          */
         TabBrowser(wxWindow *Container);
         
+        /*  UpdateNameForActiveWindow
+         *      Requests an update from the active window for the name.  This
+         *      is commonly called by the active window itself to let the
+         *      application know that something has changed.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        void UpdateNameForActiveWindow();
+
         /*  AddWindow
          *      Add window to the tab browser.  This will usually be a
          *      CompareFoldersUI or CompareFilesUI object.
