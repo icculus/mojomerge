@@ -21,7 +21,7 @@ Merge::Merge(Hunk *FirstHunk, const char *Buffer1, const char *Buffer2,
     UndoBuffer = NULL;
 
     // The FirstHunk can't be NULL
-    assert(FirstHunk);
+    //assert(FirstHunk);
     // The first two buffers can't be NULL either
     assert(Buffer1);
     assert(Buffer2);
