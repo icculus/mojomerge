@@ -22,10 +22,12 @@ namespace MojoMerge
 #endif
     enum DiffFileNumber
     {
-        DiffFile_One = 1,
-        DiffFile_Two = 2,
-        DiffFile_Three = 3
+        DiffFile_Unspecified = -1,
+        DiffFile_One = 0,
+        DiffFile_Two = 1,
+        DiffFile_Three = 2
     };
+    #define MAX_DIFF_FILES  3
 
     // Constant used for setting line number arguments to "not specified"
     #define UNSPECIFIED     0xFFFFFFFF  
