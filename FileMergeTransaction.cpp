@@ -41,6 +41,11 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
     Do();
 }
 
+FileMergeTransaction::~FileMergeTransaction()
+{
+    // TODO - Delete OriginalHunk or NewHunk based on transaction status upon deletion
+}
+
 void FileMergeTransaction::Undo()
 {
     // Not implemented yet
@@ -78,6 +83,9 @@ void FileMergeTransaction::Do()
     assert(FileThatIsDifferent == DiffFile_Unspecified ||
         FileThatIsDifferent == SourceFileNumber ||
         FileThatIsDifferent == DestFileNumber);
+    // Both files can't be "insert after" hunks
+    assert(!(End[DestFileNumber] == UNSPECIFIED && 
+        End[SourceFileNumber] == UNSPECIFIED));
 
     // Remove the original destination hunk buffer if it exists and retain
     //  it in case we call Undo later.
@@ -87,16 +95,48 @@ void FileMergeTransaction::Do()
             End[DestFileNumber], 0);
     }
 
-    // Source was not "insert after" hunk.  If it is an "insert after" hunk
-    //  then we are all finished because we already removed the lines from the
-    //  dest.
-    if(End[SourceFileNumber] != UNSPECIFIED)
+    // If source is an "insert after" hunk
+    if(End[SourceFileNumber] == UNSPECIFIED)
     {
-        // Insert lines from source into the same place we removed the lines
-        //  from the destination.  The 'Dest' argument is an "insert after"
-        //  argument, so we want to specify the line just before the hunk.
-        SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
-            End[SourceFileNumber], Start[DestFileNumber] - 1);
+        // We can assume that the destination is a change hunk since
+        //  the source is an "insert after" hunk.
+
+        // Set the offset based on how many lines are removed from 
+        //  the original destination buffer.  We're removing lines
+        //  so offset needs to be a negative value.
+        Offset = -(sint32)(End[DestFileNumber] - Start[DestFileNumber] + 1);
+    }
+    // Source hunk is a change hunk
+    else
+    {
+        // If destination was originally an "insert after" hunk
+        if(End[DestFileNumber] == UNSPECIFIED)
+        {
+            // Offset is the total number of lines added from the
+            //  source buffer
+            Offset = (sint32)(End[SourceFileNumber] - 
+                Start[SourceFileNumber] + 1);
+            // Insert lines from source to the "insert after" line number of
+            //  the destination
+            SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
+                End[SourceFileNumber], Start[DestFileNumber]);
+        }
+        // Else, destination is a change hunk
+        else
+        {
+            // Set the offset based on the difference between how many
+            //  lines were in the original dest, and how many lines
+            //  replaced it
+            Offset = (sint32)((End[SourceFileNumber] -
+                Start[SourceFileNumber]) - (End[DestFileNumber] -
+                Start[DestFileNumber]));
+            // Insert lines from source to the same line as the lines we took
+            //  out of the destination.  We have to specify "start - 1" because
+            //  the Start line represent a start of a range, but CopyLinesTo
+            //  method expects an "insert after" line.
+            SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
+                End[SourceFileNumber], Start[DestFileNumber] - 1);
+        }
     }
 
     // If hunk represents a three-way diff
@@ -108,17 +148,9 @@ void FileMergeTransaction::Do()
         if(FileThatIsDifferent == DiffFile_Unspecified ||
         FileThatIsDifferent != DestFileNumber)
         {
-            // Change the destination's hunk values to reflect the merge
             // If source is an "insert after" hunk
             if(End[SourceFileNumber] == UNSPECIFIED)
             {
-                // We can assume that the destination is a change hunk since
-                //  the source is an "insert after" hunk.
-
-                // Set the offset based on how many lines are removed from 
-                //  the original destination buffer.  We're removing lines
-                //  so offset needs to be a negative value.
-                Offset = -(sint32)(End[DestFileNumber] - Start[DestFileNumber] + 1);
                 // Make the destination an "insert after" hunk
                 End[DestFileNumber] = UNSPECIFIED;
                 // Set the "insert after" line to the line number just before
@@ -128,24 +160,6 @@ void FileMergeTransaction::Do()
             // Source hunk is a change hunk
             else
             {
-                // If destination was originally an "insert after" hunk
-                if(End[DestFileNumber] == UNSPECIFIED)
-                {
-                    // Offset is the total number of lines added from the
-                    //  source buffer
-                    Offset = (sint32)(End[SourceFileNumber] - 
-                        Start[SourceFileNumber] + 1);
-                }
-                else
-                {
-                    // Set the offset based on the difference between how many
-                    //  lines were in the original dest, and how many lines
-                    //  replaced it
-                    Offset = (sint32)((End[SourceFileNumber] -
-                        Start[SourceFileNumber]) - (End[DestFileNumber] -
-                        Start[DestFileNumber]));
-                }
-
                 // If original destination hunk is an "insert after", then
                 //  change the start line number to the first line of the
                 //  hunk (since it's now a change hunk).
@@ -156,6 +170,7 @@ void FileMergeTransaction::Do()
                 End[DestFileNumber] = Start[DestFileNumber] + 
                     (End[SourceFileNumber] - Start[SourceFileNumber]);
             }
+
             // Create updated hunk.  Since it is not a three-way diff anymore,
             //  the file that is different is always UNSPECIFIED.
             NewHunk = new Hunk(NULL, Start[DiffFile_One], End[DiffFile_One],
@@ -166,7 +181,8 @@ void FileMergeTransaction::Do()
 
     // Replace the new hunk with the original.  Also, we provide the
     //  offset information for the dest file if the new hunk affects
-    //  other hunks after it (i.e. added or removed lines).  If NewHunk is
-    //  NULL if the hunk was fully resolved, which is a valid replacement.
+    //  other hunks after it (i.e. added or removed lines).  NewHunk is
+    //  NULL if the hunk was fully resolved, in which case the hunk
+    //  is simply removed from the list.
     OriginalHunk->Replace(NewHunk, DestFileNumber, Offset);
 }
