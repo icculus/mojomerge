@@ -17,6 +17,7 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
     OriginalDestHunkBuffer = NULL;
     this->SourceFileNumber = DiffFile_Unspecified;
     this->DestFileNumber = DiffFile_Unspecified;
+    memset(&LastChange, 0, sizeof(MergeChange));
 
     // These values can't be NULL
     assert(OriginalHunk);
@@ -36,6 +37,7 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
     this->DestBuffer = DestBuffer;
     this->SourceFileNumber = SourceFileNumber;
     this->DestFileNumber = DestFileNumber;
+    LastChange.FileNumber = DestFileNumber;
 
     // Do the initial transaction
     Do();
@@ -44,6 +46,9 @@ FileMergeTransaction::FileMergeTransaction(Hunk *OriginalHunk,
 FileMergeTransaction::~FileMergeTransaction()
 {
     // TODO - Delete OriginalHunk or NewHunk based on transaction status upon deletion
+    // For now, just delete the original hunk since we haven't implemented
+    //  undo support
+    delete OriginalHunk;
 }
 
 void FileMergeTransaction::Undo()
@@ -60,6 +65,8 @@ void FileMergeTransaction::Redo()
 
 void FileMergeTransaction::Do()
 {
+    // Generic counter
+    int i;
     // Data taken from Hunk object
     uint32 Start[MAX_DIFF_FILES], End[MAX_DIFF_FILES];
     // Offset to adjust hunks located after this one
@@ -101,10 +108,14 @@ void FileMergeTransaction::Do()
         // We can assume that the destination is a change hunk since
         //  the source is an "insert after" hunk.
 
+        // Retain info as to what we're changing
+        LastChange.Type = MergeChangeType_Delete;
+        LastChange.Start = Start[DestFileNumber];
+        LastChange.Length = End[DestFileNumber] - Start[DestFileNumber] + 1;
         // Set the offset based on how many lines are removed from 
         //  the original destination buffer.  We're removing lines
         //  so offset needs to be a negative value.
-        Offset = -(sint32)(End[DestFileNumber] - Start[DestFileNumber] + 1);
+        Offset = -(sint32)LastChange.Length;
     }
     // Source hunk is a change hunk
     else
@@ -112,10 +123,14 @@ void FileMergeTransaction::Do()
         // If destination was originally an "insert after" hunk
         if(End[DestFileNumber] == UNSPECIFIED)
         {
+            // Retain info as to what we're changing
+            LastChange.Type = MergeChangeType_Insert;
+            // Start is always the first line of the range (not "insert after")
+            LastChange.Start = Start[DestFileNumber] + 1;
+            LastChange.Length = End[SourceFileNumber] - Start[SourceFileNumber] + 1;
             // Offset is the total number of lines added from the
             //  source buffer
-            Offset = (sint32)(End[SourceFileNumber] - 
-                Start[SourceFileNumber] + 1);
+            Offset = (sint32)LastChange.Length;
             // Insert lines from source to the "insert after" line number of
             //  the destination
             SourceBuffer->CopyLinesTo(DestBuffer, Start[SourceFileNumber], 
@@ -124,6 +139,13 @@ void FileMergeTransaction::Do()
         // Else, destination is a change hunk
         else
         {
+            // Retain info as to what we're changing
+            LastChange.Type = MergeChangeType_Replace;
+            LastChange.Start = Start[DestFileNumber];
+            LastChange.Length = End[DestFileNumber] - Start[DestFileNumber]
+                + 1;
+            LastChange.NewLength = End[SourceFileNumber] -
+                Start[SourceFileNumber] + 1;
             // Set the offset based on the difference between how many
             //  lines were in the original dest, and how many lines
             //  replaced it
@@ -171,11 +193,23 @@ void FileMergeTransaction::Do()
                     (End[SourceFileNumber] - Start[SourceFileNumber]);
             }
 
+            // Figure out which file was not part of the merge transaction.
+            //  This file is the one that is now different
+            for(i = DiffFile_One; i <= DiffFile_Three; i++)
+            {
+                // If the file is neither the source or the destination then
+                //  this is the file that is different in the hunk.
+                if(((DiffFileNumber)i != SourceFileNumber) && 
+                ((DiffFileNumber)i != DestFileNumber))
+                {
+                    FileThatIsDifferent = (DiffFileNumber)i;
+                }
+            }
             // Create updated hunk.  Since it is not a three-way diff anymore,
             //  the file that is different is always UNSPECIFIED.
             NewHunk = new Hunk(NULL, Start[DiffFile_One], End[DiffFile_One],
                 Start[DiffFile_Two], End[DiffFile_Two], Start[DiffFile_Three],
-                End[DiffFile_Three], DiffFile_Unspecified);
+                End[DiffFile_Three], FileThatIsDifferent);
         }
     }
 
@@ -185,4 +219,9 @@ void FileMergeTransaction::Do()
     //  NULL if the hunk was fully resolved, in which case the hunk
     //  is simply removed from the list.
     OriginalHunk->Replace(NewHunk, DestFileNumber, Offset);
+}
+
+const MergeChange *FileMergeTransaction::GetLastChange()
+{
+    return &LastChange;
 }

@@ -12,6 +12,23 @@
 
 namespace MojoMerge
 {
+    enum MergeChangeType
+    {
+        MergeChangeType_None = 0,
+        MergeChangeType_Insert,
+        MergeChangeType_Delete,
+        MergeChangeType_Replace
+    };
+
+    struct MergeChange
+    {
+        DiffFileNumber FileNumber;  // File that changed
+        MergeChangeType Type;       // Type of change
+        uint32 Start;               // Starting line of change
+        uint32 Length;              // Length of change
+        uint32 NewLength;           // New length of change if "Replace" type
+    };
+
     class FileMergeTransaction : public Transaction
     {
     public:
@@ -47,6 +64,18 @@ namespace MojoMerge
          */
         ~FileMergeTransaction();
 
+        /*  GetLastChange
+         *      Returns information on what file changed based on the
+         *      transaction.  This value may change when executing an
+         *      "undo" and "redo".  Typically this value is used for
+         *      displaying the results of a transaction visually.
+         *  Params
+         *      none
+         *  Returns
+         *      Change that happened as a result of the transaction
+         */
+        const MergeChange *GetLastChange();
+
         /***Overridden Methods***/
         /*  Undo
          *      See Transaction.h for more information.
@@ -57,7 +86,6 @@ namespace MojoMerge
          *      See Transaction.h for more information.
          */
         virtual void Redo();
-
         
     private:
         /*  Do
@@ -83,6 +111,9 @@ namespace MojoMerge
         // Source and destination file numbers
         DiffFileNumber SourceFileNumber;
         DiffFileNumber DestFileNumber;
+        // What lines and buffers were affected in last call to Do, Undo, or
+        //  Redo methods
+        MergeChange LastChange;
     };
 }
 
