@@ -69,6 +69,10 @@ Menu::Menu()
     wxMenu *DebugMenu = new wxMenu();
     DebugMenu->Append(ID_TEST_TWOWAY_DIFF_MENU, wxT("Test two-way diff"), wxT(""));
     DebugMenu->Append(ID_TEST_THREEWAY_DIFF_MENU, wxT("Test three-way diff"), wxT(""));
+    DebugMenu->Append(ID_TEST_LINEBUFFER_MENU, wxT("Test LineBuffer"), wxT(""));
+    DebugMenu->Append(ID_TEST_TWOWAY_MERGE_MENU, wxT("Test two-way merge"), wxT(""));
+    DebugMenu->Append(ID_TEST_STACK_MENU, wxT("Test Stack"), wxT(""));
+    DebugMenu->Append(ID_TEST_COMPAREFOLDERS_MENU, wxT("Test CompareFolders"), wxT(""));
     Append(DebugMenu, wxT("Debug"));
 #endif
 }

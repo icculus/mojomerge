@@ -172,6 +172,27 @@ void MainWindow::OnTestThreeWayDiff(wxCommandEvent& event)
     if(MyHunk)
         MyHunk->DeleteList();
 }
+void MainWindow::OnTestLineBuffer(wxCommandEvent& event) 
+{
+    // Test the LineBuffer object
+    Test::TestLineBuffer();
+}
+void MainWindow::OnTestTwoWayMerge(wxCommandEvent& event)
+{
+    // Test the two-way merge functionality
+    Test::TestMerge_TwoWay();
+}
+void MainWindow::OnTestStack(wxCommandEvent& event)
+{
+    // Test the Stack object
+    Test::TestStack();
+}
+void MainWindow::OnTestCompareFolders(wxCommandEvent& event)
+{
+    // Test the CompareFolders object
+    Test::TestCompareFolders();
+}
+
 #endif
 
 // Event mappings for the menu
@@ -203,6 +224,10 @@ BEGIN_EVENT_TABLE(MainWindow, wxFrame)
 #ifdef _DEBUG
     EVT_MENU(ID_TEST_TWOWAY_DIFF_MENU, MainWindow::OnTestTwoWayDiff)
     EVT_MENU(ID_TEST_THREEWAY_DIFF_MENU, MainWindow::OnTestThreeWayDiff)
+    EVT_MENU(ID_TEST_LINEBUFFER_MENU, MainWindow::OnTestLineBuffer)
+    EVT_MENU(ID_TEST_TWOWAY_MERGE_MENU, MainWindow::OnTestTwoWayMerge)
+    EVT_MENU(ID_TEST_STACK_MENU, MainWindow::OnTestStack)
+    EVT_MENU(ID_TEST_COMPAREFOLDERS_MENU, MainWindow::OnTestCompareFolders)
 #endif
 END_EVENT_TABLE()
 
