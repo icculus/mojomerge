@@ -12,6 +12,11 @@ namespace MojoMerge
     class CompareUI : public TabWindow
     {
     public:
+        CompareUI()
+        {
+            // Type is a CompareUI object as well
+            ID |= TabWindow_CompareUI;
+        }
         /*  Edit Commands
          *      These are all commands that are applicable to any CompareUI
          *      window.  They must be overridden by any derived class
