@@ -106,7 +106,7 @@ namespace MojoMerge
     private:
         wxBoxSizer *VerticalSizer;
         wxBoxSizer *TopHorizontalSizer;
-        wxComboBox *FileComboBox;
+        wxStaticText *TextBox;
         wxButton *PickFileButton;
         DiffTextEdit *FileTextEdit;
         // Name of file displayed in the panel (empty string if none)
