@@ -82,7 +82,7 @@ void DiffTextEdit::EOFStyleBugHack()
     //  last line as well.  Moving the cursor programmatically
     //  doesn't seem to fix it, but moving the cursor manually does
     //  fix the problem.
-    int Pos;
+    /*int Pos;
 
     // Get last position in entire file
     Pos = GetLineEndPosition(GetLineCount() - 1);
@@ -91,7 +91,26 @@ void DiffTextEdit::EOFStyleBugHack()
     // Remove the "x".  This allows the style to refresh correctly.
     SetTargetStart(Pos);
     SetTargetEnd(Pos + 1);
-    ReplaceTarget("");
+    ReplaceTarget("");*/
+}
+
+void DiffTextEdit::BlankLineStyleBugHack()
+{
+    int OldZoom = GetZoom();
+    if(OldZoom < 20)
+        SetZoom(OldZoom + 1);
+    else
+        SetZoom(OldZoom - 1);
+
+    SetZoom(OldZoom);
+    /*// Add an "x" character to the end
+    InsertText(0, "x\n");
+    // Get length of end line
+    int LineLength = this->LineLength(0);
+    // Remove the line we just added.  This allows the styles to be refreshed correctly
+    SetTargetStart(0);
+    SetTargetEnd(LineLength);
+    ReplaceTarget("");*/
 }
 
 void DiffTextEdit::DisplayText(const wxString& text)
@@ -99,6 +118,20 @@ void DiffTextEdit::DisplayText(const wxString& text)
     ClearAll();
     ClearDocumentStyle();
     SetText(text);
+    BlankLineStyleBugHack();
+}
+
+void DiffTextEdit::DeleteLines(int Start, int Length)
+{
+    // Get start and end positions for line deletion
+    int StartPos = PositionFromLine(Start);
+    int EndPos = PositionFromLine(Start + Length - 1) + 
+        LineLength(Start + Length - 1);
+    // Set the target from start to end
+    SetTargetStart(StartPos);
+    SetTargetEnd(EndPos);
+    // Delete the target
+    ReplaceTarget("");
 }
 
 void DiffTextEdit::ConfigSetFont(wxFont &NewFont)
