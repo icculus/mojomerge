@@ -11,10 +11,12 @@ Menu::Menu()
 {
     // Create "File" menu
     wxMenu *FileMenu = new wxMenu();
-    FileMenu->Append(ID_TWOWAYFILECOMPARE_MENU, wxT("New two-way File Comparison"), wxT(""));
-    FileMenu->Append(ID_THREEWAYFILECOMPARE_MENU, wxT("New three-way File Comparison"), wxT(""));
-    FileMenu->Append(ID_TWOWAYFOLDERCOMPARE_MENU, wxT("New two-way Folder Comparison"), wxT(""));
-    FileMenu->Append(ID_THREEWAYFOLDERCOMPARE_MENU, wxT("New three-way Folder Comparison"), wxT(""));
+    FileMenu->Append(ID_TWOWAYFILECOMPARE_MENU, wxT("New two-way File Comparison\tCtrl-n"), wxT(""));
+    FileMenu->Append(ID_THREEWAYFILECOMPARE_MENU, wxT("New three-way File Comparison\tCtrl-Shift-n"), wxT(""));
+    FileMenu->Append(ID_TWOWAYFOLDERCOMPARE_MENU, wxT("New two-way Folder Comparison\tCtrl-d"), wxT(""));
+    FileMenu->Append(ID_THREEWAYFOLDERCOMPARE_MENU, wxT("New three-way Folder Comparison\tCtrl-Shift-d"), wxT(""));
+    FileMenu->AppendSeparator();
+    FileMenu->Append(ID_CLOSEWINDOW_MENU, wxT("Close Window\tCtrl-w"), wxT(""));
     FileMenu->AppendSeparator();
     wxMenu *SaveSubMenu = new wxMenu();
     SaveSubMenu->Append(ID_SAVE_FILE1_MENU, wxT("Save First File\tCtrl-1"), wxT(""));
@@ -45,12 +47,6 @@ Menu::Menu()
     
     // Create "Compare" menu
     wxMenu *CompareMenu = new wxMenu();
-    CompareMenu->Append(ID_CMPFILES_OPT_MENU, wxT("Compare Files"), wxT(""), TRUE);
-    CompareMenu->Append(ID_CMPFOLDERS_MENU, wxT("Compare Folders"), wxT(""), TRUE);
-    CompareMenu->AppendSeparator();
-    CompareMenu->Append(ID_TWOWAY_MENU, wxT("Two-Way Comparison"), wxT(""), TRUE);
-    CompareMenu->Append(ID_THREEWAY_MENU, wxT("Three-Way Comparison"), wxT(""), TRUE);
-    CompareMenu->AppendSeparator();
     CompareMenu->Append(ID_RECOMPARE_MENU, wxT("Recompare\tF5"), wxT(""));
     CompareMenu->AppendSeparator();
     CompareMenu->Append(ID_PREFERENCES_MENU, wxT("Preferences"), wxT(""));

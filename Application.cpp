@@ -83,6 +83,12 @@ void Application::CmdNewThreeWayFolderComparison()
     Browser->AddWindow(new CompareFoldersUI(true));
 }
 
+void Application::CmdCloseWindow()
+{
+    // Create a new comparison window
+    Browser->RemoveActiveWindow();
+}
+
 void Application::CmdSaveFirstFile()
 {
     // Coerce the current window and save the file
@@ -165,26 +171,6 @@ void Application::CmdSelectAll()
 {
     // Coerce the current window and print
     GetWindowAsCompareUI(Browser->GetActiveWindow())->SelectAll();
-}
-
-void Application::CmdCompareFiles()
-{
-}
-
-void Application::CmdCompareFolders()
-{
-}
-
-void Application::CmdTwoWayComparison()
-{
-    // Coerce the current window and print
-    GetWindowAsCompareUI(Browser->GetActiveWindow())->TwoWayComparison();
-}
-
-void Application::CmdThreeWayComparison()
-{
-    // Coerce the current window and print
-    GetWindowAsCompareUI(Browser->GetActiveWindow())->ThreeWayComparison();
 }
 
 void Application::CmdRecompare()
