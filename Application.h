@@ -8,6 +8,7 @@
 #include "wx/wx.h"
 #include "TabBrowser.h"
 #include "CompareFilesUI.h"
+#include "CompareFoldersUI.h"
 #include "MainWindow.h"
 
 namespace MojoMerge
@@ -29,7 +30,10 @@ namespace MojoMerge
          *  Returns
          *      none
          */
-        static void CmdNewComparison();
+        static void CmdNewTwoWayFileComparison();
+        static void CmdNewThreeWayFileComparison();
+        static void CmdNewTwoWayFolderComparison();
+        static void CmdNewThreeWayFolderComparison();
         static void CmdSaveFirstFile();
         static void CmdSaveSecondFile();
         static void CmdSaveThirdFile();
@@ -129,15 +133,6 @@ namespace MojoMerge
 
         virtual bool OnInit();
         virtual int OnExit();
-
-        /*  CreateDefaultComparisonWindow
-         *      Creates a comparison window based on configured default settings
-         *  Params
-         *      none
-         *  Returns
-         *      A default comparison window object.
-         */
-        static CompareUI *CreateDefaultComparisonWindow();
 
         /*  GetWindowAsCompareFilesUI
          *      Coerces the specified TabWindow into a CompareFilesUI object

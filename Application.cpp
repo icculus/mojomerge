@@ -59,10 +59,28 @@ int Application::OnExit()
     return 0;
 }
 
-void Application::CmdNewComparison()
+void Application::CmdNewTwoWayFileComparison()
 {
     // Create a new comparison window
-    Browser->AddWindow(CreateDefaultComparisonWindow());
+    Browser->AddWindow(new CompareFilesUI());
+}
+
+void Application::CmdNewThreeWayFileComparison()
+{
+    // Create a new comparison window
+    Browser->AddWindow(new CompareFilesUI(true));
+}
+
+void Application::CmdNewTwoWayFolderComparison()
+{
+    // Create a new comparison window
+    Browser->AddWindow(new CompareFoldersUI());
+}
+
+void Application::CmdNewThreeWayFolderComparison()
+{
+    // Create a new comparison window
+    Browser->AddWindow(new CompareFoldersUI(true));
 }
 
 void Application::CmdSaveFirstFile()
@@ -267,17 +285,6 @@ const char *Application::GetTempFolder()
     }
     
     return TempFolder;
-}
-
-CompareUI *Application::CreateDefaultComparisonWindow()
-{
-    // TODO - Add code to look at Config object for actual default
-    // For now, just return a two-way diff object
-    CompareUI *NewWindow = new CompareFilesUI();
-    // Window can't be NULL
-    assert(NewWindow);
-
-    return NewWindow;
 }
 
 CompareFilesUI *Application::GetWindowAsCompareFilesUI(TabWindow *Window)
