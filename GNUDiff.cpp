@@ -156,7 +156,7 @@ void GNUDiff::GetDiffOutput(const char *Path, const char *CommandLine)
     // Memory allocation error
     assert(DiffResult);
     // Run the diff program
-    Pipe = popen(FullCommandLine, "rb");
+    Pipe = popen(FullCommandLine, "r");
     // Pipe can't be NULL
     assert(Pipe);
     // Read the output of 'diff'
