@@ -6,21 +6,24 @@
 #include "FolderMerge.h"
 #include "Application.h"
 #include "Identifiers.h"
+#include "Config.h"
 
 using namespace MojoMerge;
 
-class TreeData : public wxTreeItemData
+namespace MojoMerge
 {
-public:
-    wxTreeItemId ID[MAX_DIFF_FILES];
-    FolderHunk *Hunk;   // Hunk that is associated with item
-};
+    class TreeData : public wxTreeItemData
+    {
+    public:
+        wxTreeItemId ID[MAX_DIFF_FILES];
+        FolderHunk *Hunk;   // Hunk that is associated with item
+    };
+}
 
 CompareFoldersUI::CompareFoldersUI(bool ThreeWayNotTwoWay)
 {
     //TODO - Need to replace with paths from config object
-    MyDiff = new GNUDiff("C:\\cygwin\\bin\\diff.exe", 
-        "C:\\cygwin\\bin\\diff3.exe", Application::GetTempFolder());
+    MyDiff = new GNUDiff(Config::GetDiffPath(), Config::GetDiff3Path(), Application::GetTempFolder());
 
     // Save member variables
     this->ThreeWayNotTwoWay = ThreeWayNotTwoWay;
@@ -118,6 +121,11 @@ void CompareFoldersUI::Initialize(wxWindow *Parent)
     this->SetSizer(HorizontalSizer);
     HorizontalSizer->Fit(this);
     HorizontalSizer->SetSizeHints(this);
+}
+
+uint32 CompareFoldersUI::RequestCommandStatus()
+{
+    return 0;
 }
 
 void CompareFoldersUI::SetFolder(DiffFileNumber File, wxString &Filename)

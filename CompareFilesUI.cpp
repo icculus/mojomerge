@@ -6,7 +6,9 @@
 #include "Application.h"
 #include "Identifiers.h"
 #include "wx/stc/stc.h"
+#include "wx/file.h"
 #include "MergeHunkRef.h"
+#include "Config.h"
 
 using namespace MojoMerge;
 
@@ -28,8 +30,8 @@ CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
     memset(NextFreeMergeButton, 0, sizeof(uint32) * (MAX_DIFF_FILES - 1));
 
     // TODO - Get paths from Config object instead of hard coding them
-    MyDiff = new GNUDiff("C:\\cygwin\\bin\\diff.exe", 
-        "C:\\cygwin\\bin\\diff3.exe", Application::GetTempFolder());
+    MyDiff = new GNUDiff(Config::GetDiffPath(), Config::GetDiff3Path(),
+        Application::GetTempFolder());
 
     // Object is also a CompareFilesUI object
     ID |= TabWindow_CompareFilesUI;
@@ -68,7 +70,7 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
     for(i = DiffFile_One; i <= LastDiffFile; i++)
     {
         // Create first file panel object
-        FilePanels[i] = new CompareFilePanel(this);
+        FilePanels[i] = new CompareFilePanel(this, (DiffFileNumber)i);
         // Add file panel to the sizer
         HorizontalSizer->Add(FilePanels[i], 1, wxGROW, 5);
 
@@ -84,7 +86,6 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
             SeparatorPanels[i] = new SeparatorPanel(this);
             HorizontalSizer->Add(SeparatorPanels[i], 0, wxGROW, 5);
         }
-
     }
 
     // Set sizers to that they automagically resize
@@ -94,16 +95,107 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
     HorizontalSizer->SetSizeHints(this);
 }
 
+uint32 CompareFilesUI::RequestCommandStatus()
+{
+    return 0;
+}
+
 void CompareFilesUI::SetFile(DiffFileNumber File)
 {
+    if(FilePanels[File]->SetFile())
+    {
+        // If new file has been set, the MyMerge object is no longer relavent
+        //  to what's currently there.  Remove it.
+        if(MyMerge)
+        {
+            delete MyMerge;
+            MyMerge = NULL;
+        }
+
+        // Redraw the separator panels since we update the files.  In this case
+        //  we're just clearing the old lines since the Merge object is NULL.
+        wxClientDC PanelDC1(SeparatorPanels[0]);
+        DrawDiffConnectLines(&PanelDC1, 0);
+        if(ThreeWayNotTwoWay)
+        {
+            wxClientDC PanelDC2(SeparatorPanels[1]);
+            DrawDiffConnectLines(&PanelDC2, 1);
+        }
+
+        // Clear all of the styling markings for each panel
+        int i;
+        for(i = DiffFile_One; i <= LastDiffFile; i++)
+            FilePanels[i]->GetDiffTextEdit()->MarkClearAll();
+    }
+
+    CheckReadyToRecompare();
+}
+
+void CompareFilesUI::CheckReadyToRecompare()
+{
+    int i;
+    bool Flag = false;
+
+    for(i = DiffFile_One; i <= LastDiffFile; i++)
+    {
+        // If one of the files is not set
+        if(!FilePanels[i]->GetBuffer())
+        {
+            Application::CmdSetStatusBarMsg(wxT("Please select all files to be compared."));
+            Flag = true;
+            break;
+        }
+    }
+
+    // If flag not set, all of the files are valid
+    if(!Flag)
+    {
+        Application::CmdSetStatusBarMsg(wxT("To perform a recompare press F5"));
+    }
 }
 
 void CompareFilesUI::SaveFile(DiffFileNumber File)
 {
+    uint32 i;
+    // Get buffer associated with specified file
+    LineBuffer *Buffer = MyMerge->GetBuffer(File);
+    // Get linecount for buffer
+    uint32 LineCount = Buffer->GetLineCount();
+
+    // Create file object
+    wxFile MyFile(FilePanels[File]->GetFile(), wxFile::write);
+
+    // Make sure file was opened successfully
+    if(MyFile.IsOpened())
+    {
+        // Loop through each line in the file
+        for(i = 1; i <= LineCount; i++)
+            MyFile.Write(Buffer->GetLine(i));
+
+        // Close the file since we're done writing it
+        MyFile.Close();
+    }
+    else
+    {
+        // File could not be saved, so tell the user
+        wxMessageBox(wxT("File could not be saved.  File may be readonly or folder permissions may be preventing the file from being saved.  Please select an alternative location in the following dialog."),
+            wxT("Error"), wxOK | wxICON_ERROR);
+        // Bring up the SaveAs dialog in case the error is because of a file
+        //  or folder being readonly, or permissions prevent writing.
+        SaveFileAs(File);
+    }
 }
 
 void CompareFilesUI::SaveFileAs(DiffFileNumber File)
 {
+    // Prompt user for save path
+    wxString Filename = wxFileSelector(wxT("Choose a file to save"), "", "", "", "*", wxSAVE | wxOVERWRITE_PROMPT, Application::GetMainWindow());
+    // If user did not cancel the operation
+    if(!Filename.IsEmpty())
+    {
+        // Save the file
+        SaveFile(File);
+    }
 }
 
 void CompareFilesUI::Print()
@@ -153,7 +245,10 @@ void CompareFilesUI::Recompare()
 
     // Remove the previous merge object if created
     if(MyMerge)
+    {
         delete MyMerge;
+        MyMerge = NULL;
+    }
 
     // If three-way comparison
     if(ThreeWayNotTwoWay)
@@ -163,10 +258,14 @@ void CompareFilesUI::Recompare()
             FilePanels[DiffFile_One]->GetBuffer(),
             FilePanels[DiffFile_Two]->GetBuffer(),
             FilePanels[DiffFile_Three]->GetBuffer());
-        // Create our merge object with the hunks returned from the diff
-        MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
+        // Only create Merge object if there are diffs
+        if(FirstHunk)
+        {
+            // Create our merge object with the hunks returned from the diff
+            MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
                 FilePanels[DiffFile_Two]->GetBuffer(),
                 FilePanels[DiffFile_Three]->GetBuffer());
+        }
     }
     // If two-way comparison
     else
@@ -174,9 +273,13 @@ void CompareFilesUI::Recompare()
         FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
             FilePanels[DiffFile_One]->GetBuffer(),
             FilePanels[DiffFile_Two]->GetBuffer());
-        // Create our merge object with the hunks returned from the diff
-        MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
+        // Only create Merge object if there are diffs
+        if(FirstHunk)
+        {
+            // Create our merge object with the hunks returned from the diff
+            MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
                 FilePanels[DiffFile_Two]->GetBuffer());
+        }
     }
 
     // Initiate a compare on each pane (mark changes based on hunks)
@@ -217,7 +320,11 @@ void CompareFilesUI::OnFileTextPosChanged(wxStyledTextEvent& event)
 void CompareFilesUI::DetermineAutoScrolling(DiffFileNumber FileNumber)
 {
     int CurVisibleLine;
-    
+
+    // Return if we haven't created our merge object yet
+    if(!MyMerge)
+        return;
+
     // Get text edit control for specified file
     DiffTextEdit *TextEdit = FilePanels[FileNumber]->GetDiffTextEdit();
     // Get the top line that is visible in the control
@@ -242,7 +349,6 @@ void CompareFilesUI::DetermineAutoScrolling(DiffFileNumber FileNumber)
             AutoAdjustScrolling(FileNumber);
             // Retain a reference to the window that scrolled last
             LastScrolledWindow = FileNumber;
-            Application::Debug("Calling refresh for separator panels");
             // Redraw the separator panels since we've scrolled one or more
             //  of the windows
             wxClientDC PanelDC1(SeparatorPanels[0]);
@@ -542,11 +648,11 @@ void CompareFilesUI::DrawDiffConnectLines(wxDC *DC, int PanelIndex)
     //wxClientDC *Panel1DC = new wxClientDC(SeparatorPanels[DiffFile_One]);
     //wxClientDC *Panel2DC = NULL;
 
+    DC->Clear();
+
     // Return if our merge object hasn't been created yet
     if(!MyMerge)
         return;
-
-    DC->Clear();
 
     // Reset the free merge button value since we're redrawing buttons
     NextFreeMergeButton[PanelIndex] = 0;

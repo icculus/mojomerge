@@ -13,6 +13,26 @@
 
 namespace MojoMerge
 {
+    enum AppCommand
+    {
+        Cmd_SaveFirstFile       =   0x00000001,
+        Cmd_SaveSecondFile      =   0x00000002,
+        Cmd_SaveThirdFile       =   0x00000004,
+        Cmd_SaveFirstFileAs     =   0x00000008,
+        Cmd_SaveSecondFileAs    =   0x00000010,
+        Cmd_SaveThirdFileAs     =   0x00000020,
+        Cmd_Print               =   0x00000040,
+        Cmd_PrintPreview        =   0x00000080,
+        Cmd_Undo                =   0x00000100,
+        Cmd_Redo                =   0x00000200,
+        Cmd_Cut                 =   0x00000400,
+        Cmd_Copy                =   0x00000800,
+        Cmd_Paste               =   0x00001000,
+        Cmd_SelectAll           =   0x00002000,
+        Cmd_Recompare           =   0x00004000,
+        Cmd_SetFile             =   0x00006000
+    };
+
     class Application : public wxApp
     {
     public:
@@ -54,6 +74,20 @@ namespace MojoMerge
         static void CmdStatusbar();
         static void CmdExit();
         static void CmdCloseWindow();
+        static void CmdSetFile(DiffFileNumber FileNumber);
+        static void CmdSetStatusBarMsg(wxString Message);
+
+        /*  UpdateAvailableCommandsForActiveWindow
+         *      Requests an update from the active window for a list of
+         *      commands to enable and disable.  This is commonly called from
+         *      the active window itself to let the application know that
+         *      something has changed.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        static void UpdateAvailableCommandsForActiveWindow();
 
         /*  ReadFile
          *      Standard function that reads a file and stores the bytes in a
@@ -88,6 +122,15 @@ namespace MojoMerge
          *      folder separator
          */
         static const char *GetTempFolder();
+
+        /*  GetMainWindow
+         *      Returns a pointer to the main wiondow of the application.
+         *  Params
+         *      none
+         *  Returns
+         *      See description
+         */
+        static MainWindow *GetMainWindow();
 
         /*  Debug
          *      Prints out the specified debug message if built in debug mode.

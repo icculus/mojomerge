@@ -4,6 +4,7 @@
 
 #include "Menu.h"
 #include "Identifiers.h"
+#include "Application.h"
 
 using namespace MojoMerge;
 
@@ -76,3 +77,22 @@ Menu::Menu()
 #endif
 }
 
+void Menu::SetCommandStatus(uint32 Status)
+{
+    Enable(ID_SAVE_FILE1_MENU, Cmd_SaveFirstFile & Status);
+    Enable(ID_SAVE_FILE2_MENU, Cmd_SaveSecondFile & Status);
+    Enable(ID_SAVE_FILE3_MENU, Cmd_SaveThirdFile & Status);
+    Enable(ID_SAVE_FILE1_AS_MENU, Cmd_SaveFirstFileAs & Status);
+    Enable(ID_SAVE_FILE2_AS_MENU, Cmd_SaveSecondFileAs & Status);
+    Enable(ID_SAVE_FILE3_AS_MENU, Cmd_SaveThirdFileAs & Status);
+    Enable(ID_PRINT_MENU, Cmd_Print & Status);
+    Enable(ID_PRINTPREVIEW_MENU, Cmd_PrintPreview & Status);
+    Enable(ID_UNDO_MENU, Cmd_Undo & Status);
+    Enable(ID_REDO_MENU, Cmd_Redo & Status);
+    Enable(ID_CUT_MENU, Cmd_Cut & Status);
+    Enable(ID_COPY_MENU, Cmd_Copy & Status);
+    Enable(ID_PASTE_MENU, Cmd_Paste & Status);
+    Enable(ID_SELECTALL_MENU, Cmd_SelectAll & Status);
+    Enable(ID_RECOMPARE_MENU, Cmd_Recompare & Status);
+    //Enable(, Cmd_SetFile & Status);
+}

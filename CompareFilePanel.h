@@ -23,10 +23,12 @@ namespace MojoMerge
          *  Params
          *      Parent
          *          Parent window, usually a CompareFilesUI window
+         *      FileNumber
+         *          Specifies which file number this panel represents
          *  Returns
          *      none
          */
-        CompareFilePanel(wxWindow *Parent);
+        CompareFilePanel(wxWindow *Parent, DiffFileNumber FileNumber);
 
         /*  ~CompareFilePanel
          *      Destructs a CompareFilePanel object
@@ -43,9 +45,10 @@ namespace MojoMerge
          *  Params
          *      none
          *  Returns
-         *      none
+         *      True if setting file was successful, otherwise False if file
+         *      has not been changed.
          */
-        void SetFile();
+        bool SetFile();
 
         /*  GetFile
          *      Returns the name of the file
@@ -112,6 +115,8 @@ namespace MojoMerge
         // Name of file displayed in the panel (empty string if none)
         wxString Filename;
         char *Buffer;
+        // File number this panel represents
+        DiffFileNumber FileNumber;
     };
 }
 

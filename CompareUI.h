@@ -6,6 +6,7 @@
 #define _COMPAREUI_H_
 
 #include "TabWindow.h"
+#include "Datatypes.h"
 
 namespace MojoMerge
 {
@@ -33,16 +34,10 @@ namespace MojoMerge
         virtual void ThreeWayComparison() = 0;
         virtual void Recompare() = 0;
         
-        /*  Initialize
-         *      Initializes the CompareUI window with the parent.  Creating the
-         *      window and setting any display options should be done here
-         *  Params
-         *      Parent
-         *          Parent window this should be added to
-         *  Returns
-         *      none
+        /*  Overrides from TabWindow
          */
         virtual void Initialize(wxWindow *Parent) = 0;
+        virtual uint32 RequestCommandStatus() = 0;
 
         // Event handler that gets called by the SeparatorPanel class
         virtual void OnSeparatorPainted(wxPaintEvent &event, wxDC *dc) = 0;

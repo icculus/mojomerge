@@ -89,6 +89,7 @@ namespace MojoMerge
         virtual void TwoWayComparison();
         virtual void ThreeWayComparison();
         virtual void Recompare();
+        virtual uint32 RequestCommandStatus();
 
         /*  Initialize override
          *      See description in CompareUI class for more information
@@ -261,6 +262,18 @@ namespace MojoMerge
          */
         void ShowTransaction(FileMergeTransaction *NewTransaction);
 
+        /*  CheckReadToRecompare
+         *      When parameters change (such as a file being selected, or when
+         *      the object is first loaded) this method is called.  It displays
+         *      an appopriate status message as well as notifying the app
+         *      whether it is ok to recompare.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        void CheckReadyToRecompare();
+
         // Event handlers
         void OnFileTextPainted(wxStyledTextEvent& event);
         void OnFileTextPosChanged(wxStyledTextEvent& event);
@@ -274,8 +287,6 @@ namespace MojoMerge
         Diff *MyDiff;
         // Merge object to use for merging differences
         Merge *MyMerge;
-        // File path for each file in diff
-        wxString FilePath[MAX_DIFF_FILES];
 
         wxBoxSizer *HorizontalSizer;
         SeparatorPanel *SeparatorPanels[MAX_DIFF_FILES - 1];
