@@ -19,13 +19,17 @@ MainWindow::MainWindow()
     // Generate the menubar
     MyMenu = new Menu();
     // Generate the toolbar
-    MyToolbar = new Toolbar();
+    // TODO - Not implemented yet.  We have this commented out since creating
+    //  this empty window generates lots of Win32 API messages
+    //MyToolbar = new Toolbar();
     // Create the tab browser window
     MyTabBrowser = new TabBrowser(this);
     // Add the menu bar to the frame
     SetMenuBar(MyMenu);
     // Add the toolbar to the frame
-    SetToolBar(MyToolbar);
+    // TODO - Not implemented yet.  We have this commented out since creating
+    //  this empty window generates lots of Win32 API messages
+    //SetToolBar(MyToolbar);
 }
 
 TabBrowser *MainWindow::GetTabBrowser()
