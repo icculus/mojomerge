@@ -94,25 +94,39 @@ void Hunk::DeleteList()
     delete this;
 }
 
-void Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset)
+void Hunk::Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset)
 {
     // Temporary hunk pointer
-    Hunk *Temp = NewHunk;
+    Hunk *Temp = Next;
 
-    // Do actual replacement in the linked list
-    NewHunk->Prev = Prev;
-    NewHunk->Next = Next;
+    // If NewHunk isn't NULL
+    if(NewHunk)
+    {
+        // Do actual replacement in the linked list
+        NewHunk->Prev = Prev;
+        NewHunk->Next = Next;
+    }
+    // Reset values on this hunk
     Prev = NULL;
     Next = NULL;
 
+    // Apply offset to all hunks after the current one
     if(Offset != 0)
     {
         // File must be specified for offset
         assert(ChangedFile != DiffFile_Unspecified);
         // Loop through all the hunks after the new one we inserted,
-        while((Temp = NewHunk->Next))
+        while(Temp)
         {
+            // Apply offset to changed file part of hunk
             Temp->Start[ChangedFile] += Offset;
+            // If End of the hunk is not unspecified, then apply the offset
+            //  to the end as well.
+            if(Temp->End[ChangedFile] != UNSPECIFIED)
+                Temp->End[ChangedFile] += Offset;
+
+            // Get next hunk
+            Temp = Temp->Next;
         }
     }
 }
