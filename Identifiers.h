@@ -18,11 +18,12 @@ enum
     ID_TAB_BROWSER_PANEL,
     // CompareFilePanel IDs
     ID_COMPARE_FILE_PANEL,
-    ID_FILE_COMBO_BOX,
+    ID_FILE_TEXT_BOX,
     ID_PICK_FILE_BUTTON,
     ID_FILE_TEXT_EDIT,
     // CompareFilesUI IDs
     ID_SEPARATOR_PANEL,
+    ID_MERGE_BUTTON,
     // Menu bar IDs
     ID_FILE_MENU,
     ID_FILECOMPARE_MENU,
