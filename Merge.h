@@ -86,6 +86,17 @@ namespace MojoMerge
          */
         FileMergeTransaction *Redo();
 
+        /*  GetBuffer
+         *      Get the buffer associated with the specified file number
+         *  Params
+         *      FileNumber
+         *          File to get buffer of
+         *  Returns
+         *      Buffer associated with file.  Also, may return NULL if the
+         *      specified file is not part of the Merge object.
+         */
+        LineBuffer *GetBuffer(DiffFileNumber FileNumber);
+
         /*  Merge Destructor
          *  Params
          *      none
