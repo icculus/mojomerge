@@ -60,11 +60,11 @@ namespace MojoMerge
          *          File number that the change will be written to.  This file
          *          number must be different than SourceFileNumber.
          *  Returns
-         *      Returns a pointer to new hunk, or NULL if the hunk was
-         *      completely resolved.
+         *      Returns a pointer to the new transaction object that was
+         *      created when doing the resolution.
          */
-        Hunk *ResolveDiff(Hunk *MergeHunk, DiffFileNumber SourceFileNumber,
-            DiffFileNumber DestFileNumber);
+        FileMergeTransaction *ResolveDiff(Hunk *MergeHunk,
+            DiffFileNumber SourceFileNumber, DiffFileNumber DestFileNumber);
 
         /*  Undo
          *      Calls the Undo::Undo method, returning the result of the Undo
@@ -96,6 +96,16 @@ namespace MojoMerge
          *      specified file is not part of the Merge object.
          */
         LineBuffer *GetBuffer(DiffFileNumber FileNumber);
+
+        /*  GetFirstHunk
+         *      Get first hunk in list.  This value may change at any time so
+         *      code should not save the result of this value.
+         *  Params
+         *      none
+         *  Returns
+         *      First hunk in list.
+         */
+        Hunk *GetFirstHunk();
 
         /*  Merge Destructor
          *  Params
