@@ -138,7 +138,7 @@ wxString Config::GetDiffPath()
     // MyConfigData can't be NULL
     assert(MyConfigData);
     MyConfigData->Read(wxT("DiffPath"), &Value, DefaultValue);
-    Application::Debug("Diff value = %s", Value);
+    Application::Debug("Diff value = %s", Value.GetData());
 
     return Value;
 }
@@ -168,7 +168,7 @@ wxString Config::GetDiff3Path()
     // MyConfigData can't be NULL
     assert(MyConfigData);
     MyConfigData->Read(wxT("Diff3Path"), &Value, DefaultValue);
-    Application::Debug("Diff3 path = %s", Value);
+    Application::Debug("Diff3 path = %s", Value.GetData());
 
     return Value;
 }
