@@ -24,28 +24,46 @@ void TransactionBuffer::PushTransaction(Transaction *NewTransaction)
     RedoBuffer->Clear();
 }
 
-void TransactionBuffer::UndoTransaction()
+Transaction *TransactionBuffer::UndoTransaction()
 {
     Transaction *TempTransaction = NULL;
 
     // Take the transaction off the Undo buffer.
     TempTransaction = UndoBuffer->Pop();
+    // Can't undo if nothing is in the buffer
+    assert(TempTransaction);
     // Undo the transaction
     TempTransaction->Undo();
     // Add the transaction to the Redo buffer
     RedoBuffer->Push(TempTransaction);
+
+    return TempTransaction;
 }
 
-void TransactionBuffer::RedoTransaction()
+Transaction *TransactionBuffer::RedoTransaction()
 {
     Transaction *TempTransaction = NULL;
 
     // Take the transaction off the Redo buffer.
     TempTransaction = RedoBuffer->Pop();
+    // Can't undo if nothing is in the buffer
+    assert(TempTransaction);
     // Redo the transaction
     TempTransaction->Redo();
     // Add the transaction to the Undo buffer
     UndoBuffer->Push(TempTransaction);
+
+    return TempTransaction;
+}
+
+bool TransactionBuffer::CanUndo()
+{
+    return !UndoBuffer->IsEmpty();
+}
+
+bool TransactionBuffer::CanRedo()
+{
+    return !RedoBuffer->IsEmpty();
 }
 
 TransactionBuffer::~TransactionBuffer()

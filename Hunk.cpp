@@ -145,8 +145,42 @@ void Hunk::Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset)
     }
 
     // Reset values on this hunk
-    Prev = NULL;
-    Next = NULL;
+    //Prev = NULL;
+    //Next = NULL;
+
+    // Apply offset to all hunks after the current one
+    if(Offset != 0)
+    {
+        // File must be specified for offset
+        assert(ChangedFile != DiffFile_Unspecified);
+        // Loop through all the hunks after the new one we inserted,
+        while(Temp)
+        {
+            // Apply offset to changed file part of hunk
+            Temp->Start[ChangedFile] += Offset;
+            // If End of the hunk is not unspecified, then apply the offset
+            //  to the end as well.
+            if(Temp->End[ChangedFile] != UNSPECIFIED)
+                Temp->End[ChangedFile] += Offset;
+
+            // Get next hunk
+            Temp = Temp->Next;
+        }
+    }
+}
+
+void Hunk::Revert(DiffFileNumber ChangedFile, sint32 Offset)
+{
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
+    // Temporary hunk pointer
+    Hunk *Temp = Next;
+
+    // Put back the original hunk in the list
+    if(Prev)
+        Prev->Next = this;
+    if(Next)
+        Next->Prev = this;
 
     // Apply offset to all hunks after the current one
     if(Offset != 0)

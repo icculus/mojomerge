@@ -112,6 +112,14 @@ uint32 CompareFilesUI::RequestCommandStatus()
     Status |= ReadyToSaveAs[DiffFile_One]?Cmd_SaveFirstFileAs:0;
     Status |= ReadyToSaveAs[DiffFile_Two]?Cmd_SaveSecondFileAs:0;
     Status |= ReadyToSaveAs[DiffFile_Three]?Cmd_SaveThirdFileAs:0;
+
+    // If merge object is created, get undo/redo status
+    if(MyMerge)
+    {
+        Status |= MyMerge->GetTransactionBuffer()->CanUndo()?Cmd_Undo:0;
+        Status |= MyMerge->GetTransactionBuffer()->CanRedo()?Cmd_Redo:0;
+    }
+
     return Status;
 }
 
@@ -260,10 +268,40 @@ void CompareFilesUI::PrintPreview()
 
 void CompareFilesUI::Undo()
 {
+    FileMergeTransaction *MyTransaction;
+    DiffFileNumber Dest;
+
+    // Undo the last transaction in the buffer
+    MyTransaction = (FileMergeTransaction *)MyMerge->GetTransactionBuffer()->
+        UndoTransaction();
+
+    // Show the transaction as it currently should be represented
+    ShowTransaction(MyTransaction);
+
+    // Changes were made to the dest file, we're ready to save it
+    Dest = MyTransaction->GetLastChange()->FileNumber;
+    ReadyToSave[Dest] = true;
+    FilePanels[Dest]->UpdateSavedIndicatorStatus(ReadyToSave[Dest]);
+    Application::UpdateAvailableCommandsForActiveWindow();
 }
 
 void CompareFilesUI::Redo()
 {
+    FileMergeTransaction *MyTransaction;
+    DiffFileNumber Dest;
+
+    // Undo the last transaction in the buffer
+    MyTransaction = (FileMergeTransaction *)MyMerge->GetTransactionBuffer()->
+        RedoTransaction();
+
+    // Show the transaction as it currently should be represented
+    ShowTransaction(MyTransaction);
+
+    // Changes were made to the dest file, we're ready to save it
+    Dest = MyTransaction->GetLastChange()->FileNumber;
+    ReadyToSave[Dest] = true;
+    FilePanels[Dest]->UpdateSavedIndicatorStatus(ReadyToSave[Dest]);
+    Application::UpdateAvailableCommandsForActiveWindow();
 }
 
 void CompareFilesUI::Cut()
@@ -916,9 +954,6 @@ void CompareFilesUI::OnMergeButtonClick(wxCommandEvent& event)
     DiffFileNumber Source = Ref->GetSource();
     DiffFileNumber Dest = Ref->GetDest();
 
-    // Turn off readonly so we can make changes to the text control
-    FilePanels[Dest]->GetDiffTextEdit()->SetReadOnly(false);
-
     // Resolve the diff associated with the button and show the results
     ShowTransaction(MyMerge->ResolveDiff(MyHunk, Source, Dest));
 
@@ -926,9 +961,6 @@ void CompareFilesUI::OnMergeButtonClick(wxCommandEvent& event)
     ReadyToSave[Dest] = true;
     FilePanels[Dest]->UpdateSavedIndicatorStatus(ReadyToSave[Dest]);
     Application::UpdateAvailableCommandsForActiveWindow();
-
-    // Turn on readonly since we're done making changes
-    FilePanels[Dest]->GetDiffTextEdit()->SetReadOnly(true);
 }
 
 void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
@@ -943,6 +975,9 @@ void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
         GetDiffTextEdit();
     // Get buffer associated with file
     LineBuffer *Buffer = MyMerge->GetBuffer(LastChange->FileNumber);
+
+    // Turn off readonly since we're making changes
+    TextEdit->SetReadOnly(false);
 
     switch(LastChange->Type)
     {
@@ -966,7 +1001,7 @@ void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
             TextEdit->DeleteLines(LastChange->Start - 1, LastChange->Length);
             // Get starting position for inserting lines (Start is 1-based)
             Pos = TextEdit->PositionFromLine(LastChange->Start - 1);
-            EndLine = (int)LastChange->Length + LastChange->Start - 1;
+            EndLine = (int)LastChange->NewLength + LastChange->Start - 1;
             for(i = LastChange->Start; i <= EndLine; i++)
             {
                 // Insert line into text edit control
@@ -1002,6 +1037,9 @@ void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
     // Auto scroll so that files are now lined up based on the file that
     //  was changed.
     DetermineAutoScrolling(LastChange->FileNumber);
+
+    // Turn on readonly since we're done making changes
+    TextEdit->SetReadOnly(true);
 }
 
 wxString CompareFilesUI::TrimFilename(wxString Filename)

@@ -64,6 +64,16 @@ namespace MojoMerge
          *      none
          */
         void Clear();
+
+        /*  IsEmpty
+         *      Returns true if stack is empty
+         *  Params
+         *      none
+         *  Returns
+         *      See description
+         */
+        bool IsEmpty();
+
     private:
         // This is the data type used with the Stack object to maintain the linked
         //  list between each stack item.
@@ -157,6 +167,8 @@ namespace MojoMerge
             ReturnValue = TempItem->Item;
             // Delete the old top StackItem object
             delete TempItem;
+            // Decrement our counter
+            Count--;
         }
         else
             ReturnValue = NULL;
@@ -173,6 +185,12 @@ namespace MojoMerge
         // While there's stuff in the stack, pop items and delete them
         while((Item = Pop()))
             delete Item;
+    }
+
+    template <class T>
+    bool Stack<T>::IsEmpty()
+    {
+        return(Count == 0);
     }
 }
 

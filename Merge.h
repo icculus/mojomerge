@@ -66,26 +66,6 @@ namespace MojoMerge
         FileMergeTransaction *ResolveDiff(Hunk *MergeHunk,
             DiffFileNumber SourceFileNumber, DiffFileNumber DestFileNumber);
 
-        /*  Undo
-         *      Calls the Undo::Undo method, returning the result of the Undo
-         *      call as a FileMergeTransaction
-         *  Params
-         *      none
-         *  Returns
-         *      Return value of Undo::Undo (casted to a FileMergeTransaction)
-         */
-        FileMergeTransaction *Undo();
-
-        /*  Redo
-         *      Calls the Undo::Redo method, returning the result of the Undo
-         *      call as a FileMergeTransaction
-         *  Params
-         *      none
-         *  Returns
-         *      Return value of Undo::Undo (casted to a FileMergeTransaction)
-         */
-        FileMergeTransaction *Redo();
-
         /*  GetBuffer
          *      Get the buffer associated with the specified file number
          *  Params
@@ -106,6 +86,15 @@ namespace MojoMerge
          *      First hunk in list.
          */
         Hunk *GetFirstHunk();
+
+        /*  GetTransactionBuffer
+         *      Returns the transaction buffer that this object created
+         *  Params
+         *      none
+         *  Returns
+         *      See description
+         */
+        TransactionBuffer *GetTransactionBuffer();
 
         /*  Merge Destructor
          *  Params

@@ -43,9 +43,9 @@ namespace MojoMerge
          *  Params
          *      none
          *  Returns
-         *      none
+         *      Transaction that was undone
          */
-        void UndoTransaction();
+        Transaction *UndoTransaction();
 
         /*  RedoTransaction
          *      Calls the "Redo" method on the transaction from the top of the
@@ -53,9 +53,27 @@ namespace MojoMerge
          *  Params
          *      none
          *  Returns
-         *      
+         *      Transaction that was redone
          */
-        void RedoTransaction();
+        Transaction *RedoTransaction();
+
+        /*  CanUndo
+         *      Returns true if the undo stack is not empty
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        bool CanUndo();
+
+        /*  CanRedo
+         *      Returns true if the redo stack is not empty
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        bool CanRedo();
 
         /*  Undo Destructor
          *      Removes all of the transactions from the undo and redo stacks,
