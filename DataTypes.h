@@ -6,6 +6,12 @@
 
 namespace MojoMerge
 {
+#ifdef WIN32
+    #define DIR_SEPARATOR '\\'
+#else
+    #define DIR_SEPARATOR '/'
+#endif
+
     typedef unsigned char       uint8;
     typedef signed char         sint8;
     typedef unsigned short      uint16;
