@@ -37,6 +37,15 @@ namespace MojoMerge
         FileMergeTransaction(Hunk *OriginalHunk, LineBuffer *SourceBuffer, 
             LineBuffer *DestBuffer, DiffFileNumber SourceFileNumber,
             DiffFileNumber DestFileNumber);
+        
+        /*  ~FileMergeTransaction
+         *      Destructs the FileMergeTransaction object
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        ~FileMergeTransaction();
 
         /***Overridden Methods***/
         /*  Undo
@@ -51,6 +60,14 @@ namespace MojoMerge
 
         
     private:
+        /*  Do
+         *      Performs the transaction for the first time.  This is called
+         *      on construction of the FileMergeTransaction object.
+         *  Parameters
+         *      none
+         *  Returns
+         *      none
+         */
         void Do();
 
         // Original hunk that existed before resolving it
