@@ -75,13 +75,13 @@ namespace MojoMerge
         void Recompare(Hunk *FirstHunk, DiffFileNumber FileNumber);
 
         /*  GetBuffer
-         *      Returns the original buffer read from the file
+         *      Returns the buffer currently represented in the panel
          *  Params
          *      none
          *  Returns
          *      See description
          */
-        const char *GetBuffer();
+        wxString GetBuffer();
 
         /*  GetTextCtrlOffset
          *      Returns the height difference between the DiffTextEdit control
@@ -104,6 +104,25 @@ namespace MojoMerge
          */
         DiffTextEdit *GetDiffTextEdit();
 
+        /*  UpdateSavedIndicatorStatus
+         *      Updates the '*' saved indicator status based on the ReadyToSave
+         *      flag.
+         *  Params
+         *      IsSaved
+         *          True if file was saved, otherwise false to indicate not
+         *  Returns
+         *      none
+         */
+        void UpdateSavedIndicatorStatus(bool IsSaved);
+
+        /*  ChangeFilename
+         *      Change the name of the file associated with the panel without
+         *      actually loading the file.  This is typically used when the
+         *      Save As function has been executed on a file, where the file
+         *      contents doesn't change, but the filename does.
+         */
+        void ChangeFilename(wxString Filename);
+
         // Event handlers
         void OnPickFileButton(wxCommandEvent& event);
     private:
@@ -114,7 +133,6 @@ namespace MojoMerge
         DiffTextEdit *FileTextEdit;
         // Name of file displayed in the panel (empty string if none)
         wxString Filename;
-        char *Buffer;
         // File number this panel represents
         DiffFileNumber FileNumber;
     };
