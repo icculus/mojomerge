@@ -29,6 +29,8 @@ CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
     memset(MergeButtons, 0, sizeof(wxButton*) * (MAX_DIFF_FILES - 1) *
         MAX_MERGE_BUTTONS);
     memset(NextFreeMergeButton, 0, sizeof(uint32) * (MAX_DIFF_FILES - 1));
+    memset(ReadyToSave, 0, sizeof(bool) * MAX_DIFF_FILES);
+    memset(ReadyToSaveAs, 0, sizeof(bool) * MAX_DIFF_FILES);
 
     // TODO - Get paths from Config object instead of hard coding them
     MyDiff = new GNUDiff(Config::GetDiffPath(), Config::GetDiff3Path(),
@@ -38,7 +40,7 @@ CompareFilesUI::CompareFilesUI(bool ThreeWayNotTwoWay)
     ID |= TabWindow_CompareFilesUI;
 
     // For now, just set our Name to some test name
-    strcpy(Name, "CompareFilesUI");
+    strcpy(Name, "New Comparison");
 
     // Retain variable for future use
     this->ThreeWayNotTwoWay = ThreeWayNotTwoWay;
@@ -72,6 +74,8 @@ void CompareFilesUI::Initialize(wxWindow *Parent)
     {
         // Create first file panel object
         FilePanels[i] = new CompareFilePanel(this, (DiffFileNumber)i);
+        // Make editing control readonly at first
+        FilePanels[i]->GetDiffTextEdit()->SetReadOnly(true);
         // Add file panel to the sizer
         HorizontalSizer->Add(FilePanels[i], 1, wxGROW, 5);
 
@@ -100,14 +104,29 @@ uint32 CompareFilesUI::RequestCommandStatus()
 {
     uint32 Status = 0;
 
+    // Set the command status mask based on what we can and can't do
     Status |= ReadyToCompare?Cmd_Recompare:0;
+    Status |= ReadyToSave[DiffFile_One]?Cmd_SaveFirstFile:0;
+    Status |= ReadyToSave[DiffFile_Two]?Cmd_SaveSecondFile:0;
+    Status |= ReadyToSave[DiffFile_Three]?Cmd_SaveThirdFile:0;
+    Status |= ReadyToSaveAs[DiffFile_One]?Cmd_SaveFirstFileAs:0;
+    Status |= ReadyToSaveAs[DiffFile_Two]?Cmd_SaveSecondFileAs:0;
+    Status |= ReadyToSaveAs[DiffFile_Three]?Cmd_SaveThirdFileAs:0;
     return Status;
 }
 
 void CompareFilesUI::SetFile(DiffFileNumber File)
 {
+    // Turn off readonly so we can make changes to the text control
+    FilePanels[File]->GetDiffTextEdit()->SetReadOnly(false);
+
     if(FilePanels[File]->SetFile())
     {
+        // Command to Save As for specified file is now valid
+        ReadyToSaveAs[File] = true;
+        // Command to Save is not valid since it was just loaded
+        ReadyToSave[File] = false;
+
         // If new file has been set, the MyMerge object is no longer relavent
         //  to what's currently there.  Remove it.
         if(MyMerge)
@@ -126,14 +145,28 @@ void CompareFilesUI::SetFile(DiffFileNumber File)
             DrawDiffConnectLines(&PanelDC2, 1);
         }
 
-        // Clear all of the styling markings for each panel
+        // Loop through all of the file panels
         int i;
+        // Reset name of our CompareFilesUI window
+        strcpy(Name, "");
         for(i = DiffFile_One; i <= LastDiffFile; i++)
+        {
+            // Clear all of the styling markings for each panel
             FilePanels[i]->GetDiffTextEdit()->MarkClearAll();
+            // Append the first filename
+            strcat(Name, TrimFilename(FilePanels[i]->GetFile()).GetData());
+            // Append separator if it's not the last file
+            if(i < LastDiffFile)
+                strcat(Name, ":");
+        }
     }
 
     CheckReadyToRecompare();
     Application::UpdateAvailableCommandsForActiveWindow();
+    Application::UpdateNameForActiveWindow();
+
+    // Turn on readonly since we're done making changes
+    FilePanels[File]->GetDiffTextEdit()->SetReadOnly(true);
 }
 
 void CompareFilesUI::CheckReadyToRecompare()
@@ -144,7 +177,7 @@ void CompareFilesUI::CheckReadyToRecompare()
     for(i = DiffFile_One; i <= LastDiffFile; i++)
     {
         // If one of the files is not set
-        if(!FilePanels[i]->GetBuffer())
+        if(FilePanels[i]->GetFile().IsEmpty())
         {
             Application::CmdSetStatusBarMsg(wxT("Please select all files to be compared."));
             ReadyToCompare = false;
@@ -181,6 +214,11 @@ void CompareFilesUI::SaveFile(DiffFileNumber File)
 
         // Close the file since we're done writing it
         MyFile.Close();
+
+        // File has just been saved, disable save command
+        ReadyToSave[File] = false;
+        FilePanels[File]->UpdateSavedIndicatorStatus(ReadyToSave[File]);
+        Application::UpdateAvailableCommandsForActiveWindow();
     }
     else
     {
@@ -197,9 +235,16 @@ void CompareFilesUI::SaveFileAs(DiffFileNumber File)
 {
     // Prompt user for save path
     wxString Filename = wxFileSelector(wxT("Choose a file to save"), "", "", "", "*", wxSAVE | wxOVERWRITE_PROMPT, Application::GetMainWindow());
+
     // If user did not cancel the operation
     if(!Filename.IsEmpty())
     {
+        FilePanels[File]->ChangeFilename(Filename);
+        // Since we renamed the file, set our save flag to true.  This is
+        //  particularly important if the SaveFile call fails.  This way
+        //  we'll maintain the "ready to save" status with the new name.
+        ReadyToSave[File] = true;
+        FilePanels[File]->UpdateSavedIndicatorStatus(ReadyToSave[File]);
         // Save the file
         SaveFile(File);
     }
@@ -250,6 +295,10 @@ void CompareFilesUI::Recompare()
     Hunk *FirstHunk;
     int i;
 
+    // Get buffers from both file panels
+    wxString Buffer1 = FilePanels[DiffFile_One]->GetBuffer();
+    wxString Buffer2 = FilePanels[DiffFile_Two]->GetBuffer();
+
     // Remove the previous merge object if created
     if(MyMerge)
     {
@@ -260,38 +309,47 @@ void CompareFilesUI::Recompare()
     // If three-way comparison
     if(ThreeWayNotTwoWay)
     {
+        // Get third buffer for three-way diff
+        wxString Buffer3 = FilePanels[DiffFile_Three]->GetBuffer();
+
         // Perform three-way comparison
         FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
-            FilePanels[DiffFile_One]->GetBuffer(),
-            FilePanels[DiffFile_Two]->GetBuffer(),
-            FilePanels[DiffFile_Three]->GetBuffer());
+            Buffer1.GetData(),
+            Buffer2.GetData(),
+            Buffer3.GetData());
         // Only create Merge object if there are diffs
-        if(FirstHunk)
-        {
+        //if(FirstHunk)
+        //{
             // Create our merge object with the hunks returned from the diff
-            MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
-                FilePanels[DiffFile_Two]->GetBuffer(),
-                FilePanels[DiffFile_Three]->GetBuffer());
-        }
+            MyMerge = new Merge(FirstHunk, Buffer1.GetData(),
+                Buffer2.GetData(),
+                Buffer3.GetData());
+        //}
     }
     // If two-way comparison
     else
     {
         FirstHunk = MyDiff->CompareFiles(DiffOption_None, 
-            FilePanels[DiffFile_One]->GetBuffer(),
-            FilePanels[DiffFile_Two]->GetBuffer());
+            Buffer1.GetData(),
+            Buffer2.GetData());
         // Only create Merge object if there are diffs
-        if(FirstHunk)
-        {
+        //if(FirstHunk)
+        //{
             // Create our merge object with the hunks returned from the diff
-            MyMerge = new Merge(FirstHunk, FilePanels[DiffFile_One]->GetBuffer(),
-                FilePanels[DiffFile_Two]->GetBuffer());
-        }
+            MyMerge = new Merge(FirstHunk, Buffer1.GetData(),
+                Buffer2.GetData());
+        //}
     }
 
     // Initiate a compare on each pane (mark changes based on hunks)
     for(i = DiffFile_One; i <= LastDiffFile; i++)
+    {
+        // Turn off readonly so we can make changes to the text control
+        FilePanels[i]->GetDiffTextEdit()->SetReadOnly(false);
         FilePanels[i]->Recompare(FirstHunk, (DiffFileNumber)i);
+        // Turn on readonly since we're done making changes
+        FilePanels[i]->GetDiffTextEdit()->SetReadOnly(true);
+    }
 
     // Redraw the separator panels since we update the files
     wxClientDC PanelDC1(SeparatorPanels[0]);
@@ -657,51 +715,51 @@ void CompareFilesUI::DrawDiffConnectLines(wxDC *DC, int PanelIndex)
 
     DC->Clear();
 
-    // Return if our merge object hasn't been created yet
-    if(!MyMerge)
-        return;
-
-    // Reset the free merge button value since we're redrawing buttons
-    NextFreeMergeButton[PanelIndex] = 0;
-
-    /*// Get size of panel area
-    wxSize PanelSize = SeparatorPanels[DiffFile_One]->GetClientSize();
-    // Initialize the memory device contexts for both panels
-    wxBitmap BitmapPanel1(PanelSize.x, PanelSize.y);
-    wxBitmap BitmapPanel2(PanelSize.x, PanelSize.y);
-    MemPanel1.SelectObject(BitmapPanel1);
-    MemPanel2.SelectObject(BitmapPanel2);*/
-
-    // If we're drawing on the first panel
-    if(PanelIndex == 0)
+    // Don't draw any lines or buttons if merge object is NULL
+    if(MyMerge)
     {
-        Src = DiffFile_One;
-        Dest = DiffFile_Two;
+        // Reset the free merge button value since we're redrawing buttons
+        NextFreeMergeButton[PanelIndex] = 0;
+
+        /*// Get size of panel area
+        wxSize PanelSize = SeparatorPanels[DiffFile_One]->GetClientSize();
+        // Initialize the memory device contexts for both panels
+        wxBitmap BitmapPanel1(PanelSize.x, PanelSize.y);
+        wxBitmap BitmapPanel2(PanelSize.x, PanelSize.y);
+        MemPanel1.SelectObject(BitmapPanel1);
+        MemPanel2.SelectObject(BitmapPanel2);*/
+
+        // If we're drawing on the first panel
+        if(PanelIndex == 0)
+        {
+            Src = DiffFile_One;
+            Dest = DiffFile_Two;
+        }
+        // Else, drawing on the second panel
+        else
+        {
+            Src = DiffFile_Two;
+            Dest = DiffFile_Three;
+        }
+
+        p = MyMerge->GetFirstHunk();
+        while(p)
+        {
+            // Draw connecting line for hunk between file one and two
+            DrawSingleDiffLine(Src, Dest, p, DC);
+            // Go to the next hunk
+            p = p->GetNextHunk();
+        }
+
+        /***Paint the lines drawn in memory onto the screen***/
+        /*wxClientDC Panel1DC(SeparatorPanels[DiffFile_One]);
+        Panel1DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel1, 0, 0);
+        if(ThreeWayNotTwoWay)
+        {
+            wxClientDC Panel2DC(SeparatorPanels[DiffFile_Two]);
+            Panel2DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel2, 0, 0);
+        }*/
     }
-    // Else, drawing on the second panel
-    else
-    {
-        Src = DiffFile_Two;
-        Dest = DiffFile_Three;
-    }
-
-    p = MyMerge->GetFirstHunk();
-    while(p)
-    {
-        // Draw connecting line for hunk between file one and two
-        DrawSingleDiffLine(Src, Dest, p, DC);
-        // Go to the next hunk
-        p = p->GetNextHunk();
-    }
-
-    /***Paint the lines drawn in memory onto the screen***/
-    /*wxClientDC Panel1DC(SeparatorPanels[DiffFile_One]);
-    Panel1DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel1, 0, 0);
-    if(ThreeWayNotTwoWay)
-    {
-        wxClientDC Panel2DC(SeparatorPanels[DiffFile_Two]);
-        Panel2DC.Blit(0, 0, PanelSize.x, PanelSize.y, &MemPanel2, 0, 0);
-    }*/
 
     // Get the first button in the list associated with the file number
     CurButton = &MergeButtons[PanelIndex][NextFreeMergeButton[PanelIndex]];
@@ -857,8 +915,20 @@ void CompareFilesUI::OnMergeButtonClick(wxCommandEvent& event)
     // Get the source and destination files for the button
     DiffFileNumber Source = Ref->GetSource();
     DiffFileNumber Dest = Ref->GetDest();
+
+    // Turn off readonly so we can make changes to the text control
+    FilePanels[Dest]->GetDiffTextEdit()->SetReadOnly(false);
+
     // Resolve the diff associated with the button and show the results
     ShowTransaction(MyMerge->ResolveDiff(MyHunk, Source, Dest));
+
+    // Changes were made to the dest file, we're ready to save it
+    ReadyToSave[Dest] = true;
+    FilePanels[Dest]->UpdateSavedIndicatorStatus(ReadyToSave[Dest]);
+    Application::UpdateAvailableCommandsForActiveWindow();
+
+    // Turn on readonly since we're done making changes
+    FilePanels[Dest]->GetDiffTextEdit()->SetReadOnly(true);
 }
 
 void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
@@ -932,6 +1002,22 @@ void CompareFilesUI::ShowTransaction(FileMergeTransaction *NewTransaction)
     // Auto scroll so that files are now lined up based on the file that
     //  was changed.
     DetermineAutoScrolling(LastChange->FileNumber);
+}
+
+wxString CompareFilesUI::TrimFilename(wxString Filename)
+{
+    #define TRIMFILENAME_MAX    15
+
+    // Get length of string
+    size_t Length = Filename.Length();
+    wxString NewFilename;
+
+    // If length is greater than our max, only take the end of it and prepend
+    //  an ellipse indicating there's more of the filename that is unseen.
+    if(Length > TRIMFILENAME_MAX)
+        Filename = "..." + Filename.Right(TRIMFILENAME_MAX);
+
+    return Filename;
 }
 
 // Event mappings for the file panel
