@@ -13,6 +13,7 @@ Hunk::Hunk(Hunk *Prev, uint32 Start1, uint32 End1, uint32 Start2, uint32 End2,
 {
     // Initialize default values for member variables
     this->Prev = Prev;
+    LinkHead = false;
     // If previous is a valid object
     if(Prev)
         // Set the previous object's next item to this item
@@ -32,6 +33,17 @@ Hunk::Hunk(Hunk *Prev, uint32 Start1, uint32 End1, uint32 Start2, uint32 End2,
     this->FileThatIsDifferent = FileThatIsDifferent;
 }
 
+Hunk::Hunk(Hunk *FirstHunk)
+{
+    // First hunk can't be NULL
+    assert(FirstHunk);
+    // Set flag that designates it as a link head
+    LinkHead = true;
+    Prev = NULL;
+    Next = FirstHunk;
+    FirstHunk->Prev = this;
+}
+
 Hunk::~Hunk()
 {
     // If hunk is deleted, remove it from the linked list while
@@ -44,24 +56,32 @@ Hunk::~Hunk()
 
 uint32 Hunk::GetStart(DiffFileNumber FileNumber)
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     // Return the starting line number of specified file
     return Start[FileNumber];
 }
 
 uint32 Hunk::GetEnd(DiffFileNumber FileNumber)
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     // Return the ending line number of specified file
     return End[FileNumber];
 }
 
 DiffFileNumber Hunk::GetDiffFile()
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     // Return the file that is different, if applicable
     return FileThatIsDifferent;
 }
 
 Hunk *Hunk::GetPrevHunk()
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     return Prev;
 }
 
@@ -72,6 +92,8 @@ Hunk *Hunk::GetNextHunk()
 
 bool Hunk::CheckValidity()
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     uint32 i;
 
     // TODO - Add more checks for Hunk validity
@@ -96,6 +118,8 @@ void Hunk::DeleteList()
 
 void Hunk::Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset)
 {
+    // This function fails if item is a linked list head
+    assert(!LinkHead);
     // Temporary hunk pointer
     Hunk *Temp = Next;
 
@@ -105,7 +129,20 @@ void Hunk::Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset)
         // Do actual replacement in the linked list
         NewHunk->Prev = Prev;
         NewHunk->Next = Next;
+        if(Prev)
+            Prev->Next = NewHunk;
+        if(Next)
+            Next->Prev = NewHunk;
     }
+    // Else, hunk is NULL (just remove it)
+    else
+    {
+        if(Prev)
+            Prev->Next = Next;
+        if(Next)
+            Next->Prev = Prev;
+    }
+
     // Reset values on this hunk
     Prev = NULL;
     Next = NULL;

@@ -46,6 +46,19 @@ namespace MojoMerge
             uint32 Start3 = UNSPECIFIED, uint32 End3 = UNSPECIFIED, 
             DiffFileNumber FileThatIsDifferent = DiffFile_Unspecified);
 
+        /*  Hunk Constructor
+         *      This version of the constructor creates a "linked list head"
+         *      that is used for lists which may have items removed from it.
+         *      Typically this is used by the Merge class.  The hunk that
+         *      is created does not actually contain hunk data.
+         *  Params
+         *      FirstHunk
+         *          First hunk in a hunk linked list.
+         *  Returns
+         *      none
+         */
+        Hunk(Hunk *FirstHunk);
+
         /*  Hunk Destructor
          *  Params
          *      none
@@ -138,6 +151,8 @@ namespace MojoMerge
          */
         void Replace(Hunk *NewHunk, DiffFileNumber ChangedFile, sint32 Offset);
     private:
+        // True if this item is a linked list head
+        bool LinkHead;
         // Pointers to previous and next hunk in the list
         Hunk *Prev;
         Hunk *Next;
