@@ -108,7 +108,7 @@ namespace MojoMerge
          *  Returns
          *      none
          */
-        static SetUndoSize(uint32 Size);
+        static void SetUndoSize(uint32 Size);
     private:
         static wxConfig *MyConfigData;
     };
