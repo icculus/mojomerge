@@ -169,6 +169,9 @@
 				RelativePath=".\Merge.cpp">
 			</File>
 			<File
+				RelativePath=".\SeparatorPanel.cpp">
+			</File>
+			<File
 				RelativePath=".\TabBrowser.cpp">
 			</File>
 			<File
@@ -245,7 +248,13 @@
 				RelativePath="Merge.h">
 			</File>
 			<File
+				RelativePath=".\MergeHunkRef.h">
+			</File>
+			<File
 				RelativePath="Print.h">
+			</File>
+			<File
+				RelativePath=".\SeparatorPanel.h">
 			</File>
 			<File
 				RelativePath=".\Stack.h">
