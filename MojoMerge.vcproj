@@ -130,6 +130,9 @@
 				RelativePath="CompareFilesUI.cpp">
 			</File>
 			<File
+				RelativePath=".\CompareFolderPanel.cpp">
+			</File>
+			<File
 				RelativePath=".\CompareFolders.cpp">
 			</File>
 			<File
@@ -201,9 +204,6 @@
 			</File>
 			<File
 				RelativePath="CompareFilesUI.h">
-			</File>
-			<File
-				RelativePath=".\CompareFolderPanel.cpp">
 			</File>
 			<File
 				RelativePath=".\CompareFolderPanel.h">
