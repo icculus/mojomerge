@@ -1,0 +1,21 @@
+- Look for diff binary in PATH if not present in cwd.
+- Throw up an error message if diff refused to run or it's missing.
+- Do directory comparisons.
+- Do file comparison when two files are selected (don't make user hit F5 the
+  first time).
+- File selection dialog box blows...I want my GTK+ standard file dialog.
+- Initial window is way too small on X11 and Aqua. Shouldn't have to resize
+  (maybe a more sane default and store last window coordinates to the
+  registry/config file).
+- File scrolling is extremely expensive and has significant impact on user
+  experience...might be overdraw, since it seems to be worse over X11 than
+  on a local machine.
+- Don't like having to click the "..." buttons to select each file after
+  clicking the "2 way diff" button...should probably just go straight to
+  file dialog.
+- Want to specify files from the command line for merging (need this for
+  Perforce, etc).
+- More to come.
+
+
+
