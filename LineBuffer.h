@@ -9,9 +9,16 @@
 #define _LINEBUFFER_H_
 
 #include <stdlib.h>
+#include "wx/string.h"
+#include "DataTypes.h"
 
 namespace MojoMerge
 {
+    #define CR      0x0D
+    #define LF      0x0A
+
+    #define LINES_ARRAY_BLOCK   1000
+
     class LineBuffer
     {
     public:
@@ -80,16 +87,44 @@ namespace MojoMerge
         //void DeleteLines(uint32 Start, uint32 End);
 
         /*  GetLine
-        *       Returns a pointer to the line specified by LineNumber
-        *   Params
-        *       LineNumber
-        *           Line to return
-        *   Returns
-        *       Pointer to the line, or NULL if invalid line number
-        */
+         *      Returns a pointer to the line specified by LineNumber
+         *  Params
+         *      LineNumber
+         *          Line to return (1-based)
+         *  Returns
+         *      Pointer to the line, or NULL if invalid line number
+         */
         const char *GetLine(uint32 LineNumber);
+
+        /*  GetLineCount
+         *      Returns the number of lines in buffer
+         *  Params
+         *      none
+         *  Returns
+         *      See description
+         */
+        uint32 GetLineCount();
     private:
+        /*  AddToLinesArray
+         *      Creates a new string from the specified char pointer and
+         *      string length and adds it to the end of the lines array.
+         *      Also does any memory allocation necessary for the array.
+         *  Params
+         *      StartP
+         *          Pointer to beginning of characters to add
+         *      Length
+         *          Number of chars to add
+         *  Returns
+         *      none
+         */
+        void AddToLinesArray(const char *StartP, uint32 Length);
+
+        // Array of char * that represents each line in a buffer
         char **Lines;
+        // Index of last line in the array
+        uint32 LineCount;
+        // Number of indexes allocated in array
+        uint32 LinesAllocated;
     };
 }
 
