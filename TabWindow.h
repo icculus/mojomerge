@@ -14,6 +14,9 @@
 
 namespace MojoMerge
 {
+    // Max length of the tab name
+    #define MAX_TAB_NAME    128
+
     // List of possible TabWindow classes
     enum TabWindowID
     {
@@ -37,6 +40,8 @@ namespace MojoMerge
         TabWindow()
         {
             ID = TabWindow_TabWindow;
+            // Set Name default to an empty string
+            strcpy(Name, "");
         }
 
         /*  GetID
@@ -54,13 +59,31 @@ namespace MojoMerge
          *      ID of the derived class.  This ID should be tested for equality
          *      by using the '&&' operator.
          */
-        TabWindowID GetID()
+        int GetID()
         {
             return ID;
         }
+
+        const char *GetName()
+        {
+            return Name;
+        }
+
+        /*  Initialize
+         *      This method initializes the window with the Parent window.
+         *      The method is typically called by the TabBrowser object.
+         *  Params
+         *      none
+         *  Returns
+         *      none
+         */
+        virtual void Initialize(wxWindow *Parent) = 0;
     protected:
         // ID of TabWindow (see TabWindowID definition for more info)
-        TabWindowID ID;
+        int ID;
+        // Name associated with window (this is what gets displayed in the
+        //  tab name
+        char Name[MAX_TAB_NAME];
     };
 }
 
