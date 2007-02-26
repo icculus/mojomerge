@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 /*  FolderHunk.h - Class that represents a block of files and folders
  *  resulting from a folder comparison.  Unlike the "Hunk" object, this object
  *  contains everything in the comparison, not just differences.

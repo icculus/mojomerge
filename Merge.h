@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 /*  Merge.h - Class for making merge transactions from hunks taken
  *  from a Diff class.  This class is responsible for doing any and all
  *  merges and manual edit changes to the buffer data for each file.

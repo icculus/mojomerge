@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 /*  Transaction.h - Abstract object tha represents a user action.  This class
  *      must be overridden in order to provide a specific transaction
  *      implementation for specific types of actions.
