@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 /*  CompareFolderPanel.h - UI class for a single file.  This class is typically
  *  used in conjunction with the CompareFilesUI class.  CompareFolderPanel class
  *  contains a textbox, combobox, and directory selection button.  It binds the

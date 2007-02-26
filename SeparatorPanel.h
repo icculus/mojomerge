@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 /*  SeparatorPanel.h - Panel that separates comparison windows.  This is kind
  *  of a workaround to not being able to trap paint events that are generated
  *  by a wxPanel object with the CompareFilesUI object.  This class basically

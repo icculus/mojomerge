@@ -1,3 +1,11 @@
+/*
+ * MojoMerge -- A cross-platform compare-and-merge utility.
+ * Copyright (C) 2007 Ryan C. Gordon and Gregory S. Read.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 #include "CompareFolders.h"
 #include <assert.h>
 #include "wx/dir.h"
